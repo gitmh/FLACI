@@ -1,0 +1,36 @@
+<md-dialog style="padding:20px">
+  <style>
+  .md-dialog-container {
+    z-index: 80;
+  }
+  md-backdrop.md-dialog-backdrop {
+    z-index: 79;
+  }
+  </style>
+  <md-content> 
+    <h3>{{title}}:</h3>
+
+    <md-input-container style="width:100%;padding-bottom:0px"> 
+      <label translate="FOLDER"></label> 
+      <md-select ng-model="folderid">
+        <md-option value="0" style="font-weight:bold" translate="NEWFOLDER"></md-option>
+        <md-divider></md-divider>
+        <md-option ng-repeat="f in folders" value="{{f.ID}}">
+          {{f.Name}}
+        </md-option>
+      </md-select>
+    </md-input-container> 
+
+    <md-input-container ng-show="folderid == 0" style="width:100%;padding-bottom:0px"> 
+      <label translate="FOLDERNAME"></label> 
+      <input ng-model="newFolderName" type="text"></input> 
+    </md-input-container> 
+
+    <div style="height:30px"></div>
+    
+  </md-content> 
+  <div class="md-actions"> 
+    <md-button ng-click="cancel()" translate="CANCEL"></md-button> 
+    <md-button class="md-primary" ng-click="publish()" translate="PUBLISH"></md-button> 
+  </div>
+</md-dialog>

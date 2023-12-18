@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+
+  <title>Regexplained</title>
+
+  <meta name="description" content="Regular expression visualizer using railroad diagrams" />
+  <meta name="viewport" content="width=device-width" />
+
+  <script src="regexp.js"></script>
+
+  <link rel="stylesheet" href="main.css" />
+  <link rel="stop" href="bangers.woff" />
+
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <script>window.html5 || document.write('<script src="/assets/javscripts/vendor/html5shiv.js"><\/script>')</script>
+  <![endif]-->
+</head>
+
+<body>
+
+<div id="container"></div>
+
+<script>
+var paperContainer = document.getElementById('container');
+renderRegExp(paperContainer, '[0-9][0-9][a-z]+', function(e) {
+    if (e) {
+      alert(e.stack || e.message);
+      throw e;
+    } else {
+      //done
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+    <md-menu>
+      <md-button style="width:3em;min-width:3em;margin:0px" aria-label="Sprache wechseln" ng-click="$mdOpenMenu($event)">
+        {{self.userLogin.language}}
+      </md-button>
+      <md-menu-content width="1">
+        <md-menu-item><md-button ng-click="self.userLogin.changeLanguage('EN')">EN</md-button></md-menu-item>
+        <md-menu-item><md-button ng-click="self.userLogin.changeLanguage('DE')">DE</md-button></md-menu-item>
+      </md-menu-content>
+    </md-menu>

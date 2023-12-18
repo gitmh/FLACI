@@ -1,0 +1,269 @@
+<div ng-controller="LanguageController as self" layout-fill>
+  <md-toolbar layout="row" layout-align="center center" style="height:64px">
+    <ng-include src="'appmenu.html'"></ng-include>
+    <span flex translate="MODULELANGUAGES"></span>
+    <span flex></span>
+    <ng-include src="'languageselect.html'"></ng-include>
+    &nbsp;
+  </md-toolbar>
+
+  <md-tabs md-stretch-tabs="auto" class="mainTabs"  md-border-bottom  md-selected="self.selectedTab" md-no-swipe>
+    <md-tab id="tab1">
+      <md-tab-label><span translate="LANGUAGES.ALPHABETANDCHARACTERS"></span></md-tab-label>
+      <md-tab-body>
+        <md-content layout-padding >
+          <div style="max-width: 970px;">
+          <md-card layout-padding style="background:white;padding-left:40px">
+            <p><i class="fa fa-info fa-fw cardSymbol"></i> <span translate="LANGUAGES.DEFALPHABET"></span></p>
+          </md-card>
+          <div layout-padding style="margin:8px">
+            <span translate="LANGUAGES.SELECTALPHABET"></span><br>
+            <md-radio-group ng-model="self.selectedAlphabet">
+              <md-radio-button value="A0">A<sub>1</sub> = { 0, 1 }</md-radio-button>
+              <md-radio-button value="A1">A<sub>2</sub> = { a, b, c, ..., z }</md-radio-button>
+              <md-radio-button value="A2">A<sub>3</sub> = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }</md-radio-button>
+              <md-radio-button value="A3">A<sub>4</sub> = { <i class="fa fa-book"></i> , <i class="fa fa-cloud"></i> , <i class="fa fa-eye"></i> , <i class="fa fa-flask"></i> , <i class="fa fa-heart"></i> , <i class="fa fa-star"></i> }</md-radio-button>
+              <md-radio-button value="A4">A<sub>5</sub> = { <span class="borderLabel">begin</span> , <span class="borderLabel">end</span> , <span class="borderLabel">for</span> , <span class="borderLabel">while</span> , <span class="borderLabel">do</span> , <span class="borderLabel">repeat</span> , <span class="borderLabel">until</span> }</md-radio-button>
+              <md-radio-button value="A5">A<sub>6</sub>  
+                <span ng-if="self.userAlphabet.length == 0" translate="LANGUAGES.CREATESELF"></span>
+                <span ng-if="self.userAlphabet.length > 0">= { 
+                  <span ng-repeat="a in self.userAlphabet">   
+                    <span class="borderLabel">{{a}}</span>
+                    <span ng-if="!$last"> , </span>
+                  </span> }
+                </span>
+              </md-radio-button>
+            </md-radio-group>
+            <md-input-container style="width:300px;margin-left:35px" ng-if="self.selectedAlphabet == 'A5'">
+              <label translate="LANGUAGES.ALHABETCHARS"></label>
+              <input ng-model="self.userAlphabetInput" ng-change="self.parseUserAlphabet()">
+            </md-input-container>         
+          </div>
+          <md-button ng-click="self.selectedTab = self.selectedTab + 1" class="md-raised md-primary" ng-disabled="self.selectedAlphabet == '' || (self.selectedAlphabet == 'A5' && self.userAlphabet.length == 0)"><span translate="LANGUAGES.NEXTTOWORD"></span></md-button>
+          </div>
+        </md-content>
+      </md-tab-body>
+    </md-tab>
+
+
+
+    <md-tab  id="tab2" md-on-select="self.setSelectedAlphabet();">
+      <md-tab-label><span translate="LANGUAGES.WORD"></span></md-tab-label>
+      <md-tab-body>
+        <md-content layout-padding>
+          <div style="max-width: 970px;">
+
+          <md-card layout-padding style="background:white;padding-left:40px">
+            <p><i class="fa fa-info fa-fw cardSymbol"></i> <span translate="LANGUAGES.DEFWORD"></span> </p>
+          </md-card>
+          <div layout-padding style="margin:8px">
+            <span translate="LANGUAGES.BUILDWORDHINT"></span> <br><br>
+            <span translate="ALPHABET"></span> <i>A</i> = {          
+                  <span ng-repeat="a in self.currentAlphabet">   
+                    <span class="borderLabel" style="cursor:pointer" ng-bind-html="a" ng-click="self.addCurrentWord(a)"></span>
+                    <span ng-if="!$last"> , </span>
+                  </span> }<br>
+            <br>
+            <span translate="LANGUAGES.WORD"></span> <i>w</i> = "<span ng-repeat="a in self.currentWord track by $index"><span class="borderLabel" style="cursor:pointer" ng-bind-html="a" ng-click="self.removeCurrentWord($index)"></span></span>"<span ng-if="self.currentWord.length == 0"> = &epsilon;</span><br><span ng-show="self.currentWord.length > 0" style="font-size:80%" translate="LANGUAGES.DELETECHARSHINT"></span><br>
+
+          </div>
+          <md-card layout-padding style="background:white;padding-left:40px">
+            <p><i class="fa fa-info fa-fw cardSymbol"></i> <span translate="LANGUAGES.DEFWORDLENGTH"></span> </p>
+          </md-card>
+          <div layout-padding style="margin:8px">
+            <span translate="LANGUAGES.WORDLENGTH"></span> |<i>w</i>| = <b>{{self.currentWord.length}}</b>
+          </div>
+
+          <md-button ng-click="self.selectedTab = self.selectedTab + 1" class="md-raised md-primary"><span translate="LANGUAGES.NEXTTOWORDLENGTH"></span></md-button>
+          </div>
+        </md-content>
+      </md-tab-body>
+    </md-tab>
+
+
+
+    <md-tab id="tab3" md-on-select="self.setSelectedAlphabet(); ">
+      <md-tab-label><span translate="LANGUAGES.WORDSET"></span></md-tab-label>
+      <md-tab-body>
+        <md-content layout-padding>
+          <div style="max-width: 970px;">
+
+          <md-card layout-padding style="background:white;padding-left:40px">
+            <p><i class="fa fa-info fa-fw cardSymbol"></i> <span translate="LANGUAGES.DEFWORDSET"></span></p>
+          </md-card>
+          <div layout-padding style="margin:8px">
+            <span translate="ALPHABET"></span> <i>A</i> = {          
+                  <span ng-repeat="a in self.currentAlphabet">   
+                    <span class="borderLabel" ng-bind-html="a"></span>
+                    <span ng-if="!$last"> , </span>
+                  </span> }<br>
+            <br>
+            <i>A<sup>*</sup></i> = {
+            <div style="">
+              <div class="wordSetRow">
+                "",
+              </div>
+              <div ng-repeat="w in self.currentWordSet track by $index" class="wordSetRow">
+                "<span class="borderLabel" ng-repeat="a in w track by $index" ng-bind-html="a"></span>", 
+              </div>
+              <div class="wordSetRow">
+                <span>...</span> 
+              </div>
+            </div>
+            }<br>
+            <md-button class="md-primary" ng-click="self.generateWordSetContent()" translate="LANGUAGES.SHOWMOREITEMS"></md-button>
+          </div>
+
+          <md-button ng-click="self.selectedTab = self.selectedTab + 1" class="md-raised md-primary" translate="LANGUAGES.NEXTTOLANGUAGE"></md-button>
+          </div>
+        </md-content>
+      </md-tab-body>
+    </md-tab>
+
+
+
+    <md-tab  id="tab4" md-on-select="self.setSelectedAlphabet();">
+      <md-tab-label><span translate="LANGUAGES.LANGUAGE"></span></md-tab-label>
+      <md-tab-body>
+        <md-content layout-padding>
+          <div style="max-width: 970px;">
+          <md-card layout-padding style="background:white;padding-left:40px">
+            <p><i class="fa fa-info fa-fw cardSymbol"></i> <span translate="LANGUAGES.DEFLANGUAGE"></span></p>
+          </md-card>
+          <div layout-padding style="margin:8px">
+            <span translate="ALPHABET"></span> <i>A</i> = {          
+                  <span ng-repeat="a in self.currentAlphabet">   
+                    <span class="borderLabel" ng-bind-html="a"></span>
+                    <span ng-if="!$last"> , </span>
+                  </span> }<br>
+            <br>
+            <span translate="LANGUAGES.BUILDLANGUAGEHINT"></span><br>
+            
+            <div layout="row" style="margin-top:5px">
+              <div flex style="padding-right:10px">
+                <i>A<sup>*</sup></i> = {
+                <div style="">
+                  <div class="wordSetRow" style="cursor:pointer" ng-click="self.addLanguageSet([])">
+                    "",
+                  </div>
+                  <div ng-repeat="w in self.currentWordSet track by $index" class="wordSetRow" style="cursor:pointer" ng-click="self.addLanguageSet(w)">
+                    "<span class="borderLabel" ng-repeat="a in w track by $index" ng-bind-html="a"></span>", 
+                  </div>
+                  <div class="wordSetRow" style="cursor:pointer" ng-click="self.currentLanguageSetHasDots = true">
+                    ... 
+                  </div>
+                </div>
+                }<br> 
+                <md-button class="md-primary" ng-click="self.generateWordSetContent()" translate="LANGUAGES.SHOWMOREITEMS"></md-button>
+              </div>
+              <div flex style="padding-left:10px">
+                <i>L</i> = {<sup>&nbsp;</sup>
+                <div style="">
+                  <div ng-repeat="w in self.currentLanguageSet track by $index" class="wordSetRow" style="cursor:pointer" ng-click="self.removeLanguageSet($index)">
+                    "<span class="borderLabel" ng-repeat="a in w track by $index" ng-bind-html="a"></span>"<span ng-if="!$last || self.currentLanguageSetHasDots">,</span> 
+                  </div>
+                  <div class="wordSetRow" ng-if="self.currentLanguageSetHasDots" style="cursor:pointer" ng-click="self.currentLanguageSetHasDots = false">
+                    <span class="borderLabel" style="border:0px; background:transparent; ">...</span>
+                  </div>
+                </div>
+                }<br> 
+                <md-button ng-if="self.currentLanguageSetHasDots" class="md-primary" ng-click="self.generateLanguageSetContent()" translate="LANGUAGES.SHOWMOREITEMS"></md-button>
+              </div>
+            </div>
+          </div>
+
+          <md-card layout-padding style="background:white;padding-left:40px">
+            <p><i class="fa fa-info fa-fw cardSymbol"></i> <span translate="LANGUAGES.DEFLANGUAGELIMITS"></span></p>
+          </md-card>
+          <div layout-padding style="margin:8px">
+            <span translate="LANGUAGES.ALTERNATIVEHINT"></span>:<br>
+
+            <md-radio-group ng-model="self.selectedLanguageCat" ng-change="self.changeLanguageCat(true)">
+              <md-radio-button value="1" class="activeContent">
+                <span translate="LANGUAGES.ALLWORDSSTARTINGWITH"></span> 
+                <md-menu>
+                  <span aria-label="Zeichen" class="borderLabel" ng-click="$mdOpenMenu($event)" ng-bind-html="self.selectedLagnaugeCat1Char"></span>
+                  <md-menu-content width="1">
+                    <md-menu-item ng-repeat="a in self.currentAlphabet">
+                      <md-button ng-click="self.selectedLagnaugeCat1Char = a;self.changeLanguageCat(true)" ng-bind-html="a"></md-button>
+                    </md-menu-item>
+                  </md-menu-content>
+                </md-menu>
+                <span translate="LANGUAGES.ALLWORDSSTARTINGWITHEND"></span>
+              </md-radio-button>
+
+              <md-radio-button value="2" class="activeContent">
+                <span translate="LANGUAGES.ALLWORDSSHORTERTHEN"></span>
+                <md-menu>
+                  <span aria-label="Zeichen" style="font-weight:bold" ng-click="$mdOpenMenu($event)">{{self.selectedLagnaugeCat2Len}} <i class="fa fa-caret-down"></i></span>
+                  <md-menu-content width="1">
+                    <md-menu-item ng-repeat="len in [1,2,3,4,5]">
+                      <md-button ng-click="self.selectedLagnaugeCat2Len = len;self.changeLanguageCat(true)">{{len}}</md-button>
+                    </md-menu-item>
+                  </md-menu-content>
+                </md-menu> 
+                <span translate="LANGUAGES.ALLWORDSSHORTERTHENEND"></span>
+              </md-radio-button>
+
+              <md-radio-button value="3" class="activeContent">
+                <span translate="LANGUAGES.ALLWORDSCONTAINING"></span>
+                <span style="background:white;padding:10px">
+                <span class="borderLabel" ng-repeat="a in self.selectedLagnaugeCat3Word track by $index" ng-click="self.selectedLagnaugeCat3Word.splice($index,1);self.changeLanguageCat(true)" ng-bind-html="a"></span>
+                <md-menu>
+                  <span aria-label="Zeichen hinzufügen" style="font-size:90%;vertical-align:middle;color:rgb(2,136,209)" ng-click="$mdOpenMenu($event)"><i class="fa fa-caret-right"></i></span>
+                  <md-menu-content width="1">
+                    <md-menu-item ng-repeat="a in self.currentAlphabet">
+                      <md-button ng-click="self.selectedLagnaugeCat3Word.push(a);self.changeLanguageCat(true)" ng-bind-html="a"></md-button>
+                    </md-menu-item>
+                  </md-menu-content>
+                </md-menu> 
+                </span>&nbsp;
+                <span translate="LANGUAGES.ALLWORDSCONTAININGEND"></span>
+              </md-radio-button>
+
+              <md-radio-button ng-if="self.currentAlphabet.length > 1" value="4" class="activeContent">
+                <span translate="LANGUAGES.ALLWORDSSAMEAMOUNT"></span>
+
+                <md-menu>
+                  <span aria-label="Zeichen" class="borderLabel" ng-click="$mdOpenMenu($event)" ng-bind-html="self.selectedLagnaugeCat4Char1"></span>
+                  <md-menu-content width="1">
+                    <md-menu-item ng-repeat="a in self.currentAlphabet">
+                      <md-button ng-click="self.selectedLagnaugeCat4Char1 = a;self.changeLanguageCat(true)" ng-bind-html="a"></md-button>
+                    </md-menu-item>
+                  </md-menu-content>
+                </md-menu>
+                <span translate="LANGUAGES.ALLWORDSSAMEAMOUNTAND"></span>
+                <md-menu>
+                  <span aria-label="Zeichen" class="borderLabel" ng-click="$mdOpenMenu($event)" ng-bind-html="self.selectedLagnaugeCat4Char2"></span>
+                  <md-menu-content width="1">
+                    <md-menu-item ng-repeat="a in self.currentAlphabet">
+                      <md-button ng-click="self.selectedLagnaugeCat4Char2 = a;self.changeLanguageCat(true)" ng-bind-html="a"></md-button>
+                    </md-menu-item>
+                  </md-menu-content>
+                </md-menu>
+                <span translate="LANGUAGES.ALLWORDSSAMEAMOUNTEND"></span>
+                
+              </md-radio-button>
+            </md-radio-group>
+ 
+            <div ng-if="self.selectedLanguageCat" style="margin-bottom:20px">
+                <i>L<sub>{{self.selectedLanguageCat}}</sub></i> = {<sup>&nbsp;</sup>
+                <div style="">
+                  <div ng-repeat="w in self.currentLanguageSetCat track by $index" class="wordSetRow">
+                    "<span class="borderLabel" ng-repeat="a in w track by $index" ng-bind-html="a"></span>"<span ng-if="!$last || self.currentLanguageSetCatHasMore">,</span> 
+                  </div>
+                  <div class="wordSetRow" ng-if="self.currentLanguageSetCatHasMore">
+                    <span class="borderLabel" style="border:0px; background:transparent; ">...</span>
+                  </div>
+                </div>
+                }<br> 
+                <md-button ng-if="self.currentLanguageSetCatHasMore" class="md-primary" ng-click="self.changeLanguageCat()" translate="LANGUAGES.SHOWMOREITEMS"></md-button>              
+            </div>
+          </div>
+          </div>
+        </md-content>
+      </md-tab-body>
+    </md-tab>
+
+  </md-tabs>
+</div>

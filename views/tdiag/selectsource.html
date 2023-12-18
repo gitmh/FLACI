@@ -1,0 +1,79 @@
+<md-dialog style="min-width:300px; width:60%;padding:20px">
+  <style>
+  .md-dialog-container {
+    z-index: 80;
+  }
+  md-backdrop.md-dialog-backdrop {
+    z-index: 79;
+  }
+  </style>
+
+  <md-content ng-if="self.element.type == 'compiler' && !self.isEdit"> 
+    <h3 translate="TDIAG.SELECTCOMPILER"></h3> 
+    <md-radio-group ng-model="self.selectedSource">
+      <md-radio-button ng-value="'newcompiler'" class="md-primary"><b><span translate="TDIAG.SELECTNEWCOMPILER"></span></b></md-radio-button>
+      <md-radio-button ng-if="self.grammars.length > 0" ng-value="'newcompilerFromG'" class="md-primary"><b><span translate="TDIAG.SELECTNEWCOMPILERFROMG"></span></b>
+      </md-radio-button>
+      <md-select ng-if="self.grammars.length > 0 && self.selectedSource == 'newcompilerFromG'" ng-model="self.selectedSourceGrammar">
+        <md-option ng-repeat="g in self.grammars"  ng-value="g" class="md-primary" ng-style="{'font-style':c.preset ?'italic':''}">{{g.Name}}</md-radio-button>
+      </md-select>
+
+      <div ng-repeat="c in self.compilers" >
+        <md-radio-button ng-value="c.ID" class="md-primary" ng-style="{'font-style':c.preset ?'italic':''}">{{c.Name}}</md-radio-button>
+      </div>
+      <md-radio-button ng-value="'import'" class="md-primary"><span translate="TDIAG.IMPORTCOMPILER"></span> &nbsp;&nbsp; <input ng-model="self.importURL" style="pointer-events:auto" placeholder="https://flaci.com/..."/></md-radio-button>
+    </md-radio-group>
+  </md-content> 
+
+  <md-content ng-if="self.element.type == 'interpreter' && !self.isEdit"> 
+    <h3 translate="TDIAG.SELECTINTERPRETER"></h3> 
+    <md-radio-group ng-model="self.selectedSource">
+      <md-radio-button ng-value="'newinterpreter'" class="md-primary"><b><span translate="TDIAG.SELECTNEWINTERPRETER"></span></b></md-radio-button>
+      <md-radio-button ng-if="self.grammars.length > 0" ng-value="'newinterpreterFromG'" class="md-primary"><b><span translate="TDIAG.SELECTNEWINTERPRETERFROMG"></span></b>
+      </md-radio-button>
+      <md-select ng-if="self.grammars.length > 0 && self.selectedSource == 'newinterpreterFromG'" ng-model="self.selectedSourceGrammar">
+        <md-option ng-repeat="g in self.grammars"  ng-value="g" class="md-primary" ng-style="{'font-style':c.preset ?'italic':''}">{{g.Name}}</md-radio-button>
+      </md-select>
+
+      <div ng-repeat="c in self.compilers" >
+        <md-radio-button ng-value="c.ID" class="md-primary" ng-style="{'font-style':c.preset ?'italic':''}">{{c.Name}}</md-radio-button>
+      </div>
+      <md-radio-button ng-value="'import'" class="md-primary"><span translate="TDIAG.IMPORTCOMPILER"></span> &nbsp;&nbsp; <input ng-model="self.importURL" style="pointer-events:auto" placeholder="https://flaci.com/..."/></md-radio-button>
+    </md-radio-group>
+  </md-content> 
+
+  <md-content ng-if="self.element.type == 'program' || ((self.element.type == 'compiler' || self.element.type == 'interpreter') && self.isEdit)" style="min-width:320px"> 
+    <md-switch style="position: absolute;top: 0px;right: 10px;" ng-model="self.showAsHTML" aria-label="als HTML">
+      <span translate="TDIAG.SHOWASHTML"></span>
+    </md-switch>
+    <h3 ng-if="self.element.type == 'program'" translate="TDIAG.PROGRAMCODE"></h3> 
+    <h3 ng-if="self.element.type == 'compiler'" translate="TDIAG.COMPILERCODE"></h3> 
+    <h3 ng-if="self.element.type == 'interpreter'" translate="TDIAG.INTERPRETERCODE"></h3> 
+    <md-button ng-if="self.element.fromURL && self.element.fromURL != ''" aria-label="reload from url" ng-disabled="$parent.disableReloadBtn" ng-click="reloadFromURL()"><i class="fa fa-fw fa-refresh"></i> <span translate="TDIAG.RELOADFROMURL"></span></md-button>
+    <div ng-if="self.showAsHTML" style="white-space:pre;overflow:auto;width:100%;min-height:300px;" ng-bind-html="$sce.trustAsHtml(self.selectedCode)"></div>
+    <textarea ng-if="!self.showAsHTML" style="width:100%;min-height:300px;box-sizing: border-box;" ng-model="self.selectedCode"></textarea>
+
+  </md-content> 
+
+
+  <md-content ng-if="self.element.type == 'ea'" style="min-width:320px"> 
+    <md-switch style="position: absolute;top: 0px;right: 10px;" ng-model="self.showAsHTML" aria-label="als HTML">
+      <span translate="TDIAG.SHOWASHTML"></span>
+    </md-switch>
+
+    <h3 ng-if="self.element.dockedRight" translate="TDIAG.INPUTCODE"></h3> 
+    <h3 ng-if="self.element.dockedLeft" translate="TDIAG.OUTPUTCODE"></h3> 
+    <h3 ng-if="!self.element.dockedLeft && !self.element.dockedRight" translate="TDIAG.IOBLOCK"></h3> 
+    <div ng-if="self.showAsHTML" style="white-space:pre;overflow:auto;width:320px;height:300px;" ng-bind-html="$sce.trustAsHtml(self.selectedCode)"> </div>
+    <textarea ng-if="!self.showAsHTML" style="width:100%;min-width:320px;height:300px;box-sizing: border-box;" ng-model="self.selectedCode"></textarea>
+
+  </md-content> 
+
+  <div class="md-actions"> 
+    <md-button ng-if="!self.element.preset && (self.element.type == 'ea' || self.element.type == 'program')" style="margin-right:50px" download="{{self.element.name+'.'+self.element.written}}" href="{{self.buildDownloadURI(self.selectedCode)}}"><i class="fa fa-fw fa-download"></i> <span translate="TDIAG.DOWNLOADASFILE"></span></md-button>
+
+    <md-button type="button" ng-click="cancel()" translate="CANCEL"></md-button> 
+    <md-button class="md-primary" ng-click="hide()" translate="OK"></md-button> 
+  </div>
+</md-dialog>
+

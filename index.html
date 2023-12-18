@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" >
+  <head>
+    <title>FLACI</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval'; script-src * data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src * data: blob: 'unsafe-inline' 'unsafe-eval'; media-src * data: blob:; img-src * data: blob: 'unsafe-inline' 'unsafe-eval'; frame-src * data: blob:; style-src * data: blob: 'unsafe-inline' 'unsafe-eval';">
+ 
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(libs/Roboto/KFOmCnqEu92Fr1Mu7GxKKTU1Kvnz.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(libs/Roboto/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+    <link rel="stylesheet" href="libs/jquery/jquery-ui.min.css" />
+    <link rel="stylesheet" href="libs/angular-material/angular-material.css"/>
+    <link rel="stylesheet" href="libs/font-awesome-4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="libs/font-awesome-4.6.3/css/font-awesome-animation.css">
+
+    <link rel="stylesheet" href="libs/ng-sortable/dist/ng-sortable.css">
+    <link rel="stylesheet" href="libs/ng-sortable/dist/ng-sortable.style.css">
+    <link rel="stylesheet" href="libs/angular/loading-bar.css"/>
+    <link rel="stylesheet" href="libs/codemirror/lib/codemirror.css">
+
+    <base href="./">
+  </head>
+
+  <body ng-app="App" class="noselect" style="overflow:hidden;background:rgb(2,136,209)" layout="column" ng-controller="AppController as self">
+    <div ng-view class="view-animate"></div>
+    <iframe id="downloadFileFrame" style="display:none"></iframe>
+
+    <script src="libs/jquery/jquery-2.1.1.min.js"></script>
+    <script src="libs/jquery/jquery-ui.min.js"></script> 
+    <script src="libs/jquery/md5.js"></script> 
+    <script src="libs/jquery/FileSaver.js"></script> 
+    <script src="libs/jquery/html2canvas.js"></script> 
+
+    <script src="libs/JSTreeGraph/JSTreeGraph.js"></script>
+    <script src="libs/angular/angular.js"></script>
+    <script src="libs/angular/angular-sanitize.js"></script>
+    <script src="libs/angular/angular-messages.js"></script>
+    <script src="libs/angular/angular-translate.min.js"></script>
+    <script src="libs/angular/angular-translate-loader-static-files.min.js"></script>
+    <script src="libs/angular/angular-animate.js"></script>
+    <script src="libs/angular/angular-route.js"></script>
+    <script src="libs/angular/angular-aria.js"></script>
+    <script src="libs/angular/loading-bar.js"></script>
+    <script src="libs/angular/fastclick.js"></script>
+    
+    <script src="libs/angular/ng-infinite-scroll.min.js"></script>
+    <script src="libs/angular-material/angular-material.js"></script>
+    <script src="libs/ng-sortable/dist/ng-sortable.js"></script>
+    <script src="libs/codemirror/lib/codemirror.js"></script>
+    <script src="libs/codemirror/mode/javascript/javascript.js"></script>
+    <script src="libs/codemirror/addon/mode/simple.js"></script>
+    <script src="libs/codemirror/addon/display/placeholder.js"></script>
+    <script src="libs/angular-ui-codemirror/ui-codemirror.js"></script>
+
+    <script src="libs/audiosynth/audiosynth.js"></script>
+    <script src="libs/musical.min.js/musical.min.js"></script>
+    <script src="libs/pablojs/pablo.min.js"></script>
+
+    <script src="libs/momentjs/moment.min.js"></script>
+    <script src="libs/clipboardjs/clipboard.min.js "></script>
+
+<!--    <script src="libs/earley/earley.php"></script> -->
+    <script src="libs/earley/earley2.js"></script>
+
+    <link rel="stylesheet" href="styles/main.css" />
+    <script src="flaci.js?v1"></script>
+
+    <!-- VCC -->
+    <script src="libs/jison/json2.js"></script>
+    <script src="libs/jison/es5.js"></script>
+    <script src="libs/jison/jison/lexer.js"></script>
+    <script src="libs/jison/jison/util/typal.js"></script>
+    <script src="libs/jison/jison/util/set.js"></script>
+    <script src="libs/jison/jison/util/bnf-parser.js"></script>
+    <script src="libs/jison/jison/bnf.js"></script>
+    <script src="libs/jison/jison.js"></script>
+    <script src="libs/jison/atocc.js"></script>
+    <script src="libs/jison/bnfparser.js"></script>
+    <script src="libs/jison/re2kfg.js"></script>
+    <script src="libs/jison/re2nea.js"></script>
+
+    <!-- TDiag -->
+    <link rel="stylesheet" href="views/tdiag/tdiag.css" />
+    <script src="views/tdiag/tdiag.js"></script>
+    <script src="views/tdiag/predefined.js"></script>
+    <script src="https://d3js.org/d3.v6.js"></script>
+
+    <!-- kfgEdit -->
+    <link rel="stylesheet" href="views/kfgedit/kfgedit.css" />
+    <script src="views/kfgedit/kfgedit.js"></script>
+
+    <!-- AutoEdit -->
+    <link rel="stylesheet" href="views/autoedit/autoedit.css" />
+    <script src="views/autoedit/autoedit.js"></script>
+
+    <!-- Transformations -->
+    <script src="libs/transformations/autoLayoutAutomaton.js"></script>
+    <script src="libs/transformations/deleteUnusedStates.js"></script>
+    <script src="libs/transformations/minimalDEA.js"></script>
+    <script src="libs/transformations/regGr2NEA.js"></script>
+    <script src="libs/transformations/kfGr2NKA.js"></script>
+    <script src="libs/transformations/removeEspilonGrammar.js"></script>
+    <script src="libs/transformations/convertGrammarToCNF.js"></script>
+    <script src="libs/transformations/checkLL1Grammar.js"></script>
+    <script src="libs/transformations/linkedBNF.js"></script>
+    <script src="libs/transformations/insertEpsilonGrammar.js"></script>
+    <script src="libs/transformations/removeChainsGrammar.js"></script>
+    <script src="libs/transformations/cleanupGrammar.js"></script>
+    <script src="libs/transformations/removeLeftRecursionGrammar.js"></script>
+    <script src="libs/transformations/leftFactorGrammar.js"></script>
+
+    <script src="libs/transformations/ea2grammar.js"></script>
+    <script src="libs/transformations/ea2regexp.js"></script>
+    <script src="libs/transformations/ka2grammar.js"></script>
+    <script src="libs/transformations/LL1parser.js"></script>
+    <script src="libs/transformations/combineEA.js"></script>
+
+    <script src="libs/transformations/isGrammarRegular.js"></script>
+    <script src="libs/transformations/regexGr2NEA.js"></script>
+    <script src="libs/transformations/leftRegular2rightRegular.js"></script>
+
+    <script src="libs/transformations/removeTrapStates.js"></script>
+    <script src="libs/transformations/linkedEA.js"></script>
+    <script src="libs/transformations/removeEpsilonNEA.js"></script>
+    <script src="libs/transformations/NEAtoDEA.js"></script>
+    <script src="libs/transformations/optimizeNEA.js"></script>
+    <script src="libs/transformations/completeDEA.js"></script>
+
+    <script src="libs/transformations/removeEpsilonNEAClassic.js"></script>
+    <script src="libs/transformations/cleanupNEA.js"></script>
+    <script src="libs/transformations/7to6tupelKA.js"></script>
+    <script src="libs/transformations/automaton2latex.js"></script>
+
+    <!-- Languages -->
+    <link rel="stylesheet" href="views/languages/languages.css" />
+    <script src="views/languages/languages.js"></script>
+
+    <!-- RegExp -->
+    <script src="libs/regexp/regexp.js"></script>
+    <script src="libs/regexp/randexp.min.js"></script>
+
+    <link rel="stylesheet" href="views/regexp/regexp.css" />
+    <script src="views/regexp/regexp.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
+
+
+ </body>
+</html>

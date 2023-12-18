@@ -1,0 +1,79 @@
+    <md-menu>
+      <md-button style="width:3em;min-width:3em;margin:0px;margin-left:8px" aria-label="App wechseln" ng-click="$mdOpenMenu($event)"><i class="fa fa-fw fa-th"></i>
+      </md-button>
+      <md-menu-content width="4">
+        <md-menu-item>
+          <md-button ng-click="self.$location.path('/')" aria-label="HOME">
+<div class="appIcon">
+<i class="fa fa-home"></i>
+</div>
+<span translate="HOME"></span></md-button>
+        </md-menu-item>
+
+        <md-menu-item>
+          <md-button ng-click="self.$location.path('/languages')" aria-label="languages">
+            <div class="appIcon">
+              <span style="font-size:50%;position: relative;top: -2px;">
+                <span class="borderLabel" style="border-color:black;background:#fff">a</span>
+                <span class="borderLabel" style="border-color:black;background:#fff">b</span>
+                <span class="borderLabel" style="border-color:black;background:#fff">c</span>
+              </span>
+            </div>
+            <span translate="MODULELANGUAGES"></span>
+          </md-button>
+        </md-menu-item>
+
+        <md-menu-item>
+          <md-button ng-click="self.$location.path('/regexp')" aria-label="regular expressions">
+            <div class="appIcon"><b>[ab]+</b></div>
+            <span translate="MODULEREGEXPEDIT"></span>
+          </md-button>
+        </md-menu-item>
+
+        <md-menu-item>
+          <md-button ng-click="self.$location.path('/kfgedit')" aria-label="grammars">
+            <div class="appIcon">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa fa-code-fork fa-rotate-180 fa-stack-1x" style="margin-left:-5px;margin-top:-7px"></i>
+                <i class="fa fa fa-code-fork fa-flip-vertical fa-stack-1x" style="margin-left:5px;margin-top:-7px"></i>
+                <span class="fa fa-stack-1x" style="font-size: 55%;margin-top:10px;">a b c</span>
+              </span>
+            </div>
+            <span translate="MODULEKFGEDIT"></span>
+          </md-button>
+        </md-menu-item>
+
+        <md-menu-item>
+          <md-button ng-click="self.$location.path('/autoedit')" aria-label="automaton">
+            <div class="appIcon">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle-thin fa-stack-1x" style="font-size: 150%;width: 30px;height: 30px;top: 5px; left: 5px;color:transparent;border-radius:100px;background:white"></i>
+                <i class="fa fa-circle-thin fa-stack-1x" style="font-size: 200%"></i>
+                <i class="fa fa-circle-thin fa-stack-1x" style="font-size: 145%"></i>
+                <span class="fa fa-stack-1x" style="font-size: 55%;">q<sub>0</sub></span>
+              </span>
+            </div>
+            <span translate="MODULEAUTOEDIT"></span>
+          </md-button>
+        </md-menu-item>
+
+        <md-menu-item>
+          <md-button ng-click="self.$location.path('/tdiag')" aria-label="compilers">
+            <div class="appIcon">
+              <div style="position:absolute;font-family:monospace">
+                <div style="background:#fff;width:30px;height:12px;border:1px solid #000;position: absolute;left: 4px;top: 8px;font-size: 9px;">
+                  <div style="position: absolute;top: -14px; left: 3px;">I<i style="margin-left: 1px;font-size:100%" class="fa fa-arrow-right fa-fw"></i>O</div>
+                </div>
+                <div style="background:#fff;width:12px;height:12px;border:1px solid #000;position:absolute;left: 13px;top:20px;font-size: 9px; border-top: 0;">
+                  <div style="position: absolute;top: -14px; left: 3px;">M</div>
+                </div>
+              </div>
+            </div>
+            <span translate="MODULETDIAG"></span>
+          </md-button>
+        </md-menu-item>
+
+
+
+      </md-menu-content>
+    </md-menu>

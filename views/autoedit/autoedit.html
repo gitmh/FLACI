@@ -1,0 +1,983 @@
+<div ng-controller="AutoEditController as self">
+  <md-toolbar layout="row" layout-align="center center" style="height:64px">
+    <ng-include src="'appmenu.html'"></ng-include>
+    <span flex translate="MODULEAUTOEDIT"></span>
+    <span flex></span>
+    <ng-include src="'languageselect.html'"></ng-include>
+    &nbsp;
+  </md-toolbar>
+  
+  <md-tabs md-stretch-tabs="auto" class="mainTabs" md-border-bottom md-selected="self.selectedTab" md-no-swipe>
+    <md-tab md-on-select="self.loadFromServer()">
+      <md-tab-label><span translate="AUTOEDIT.MYAUTOMATA"></span></md-tab-label>
+      <md-tab-body></md-tab-body>
+    </md-tab>
+    <md-tab ng-repeat="a in self.openTabs">
+      <md-tab-label>{{a.Name}} <md-button aria-label="close" ng-click="self.closeAutomaton(a,$event)" class="closeTabBtn"><i class="fa fa-times"></i></md-button> </md-tab-label>
+      <md-tab-body></md-tab-body>
+    </md-tab>
+  </md-tabs>
+  <div style="position:absolute;right:0;top:66px">
+    <input class="ng-hide" id="uploadAutomatonFile" type="file" onchange="angular.element(this).scope().self.uploadAutomaton(this)" accept="text/json" />
+    <label class="md-button md-icon-button" for="uploadAutomatonFile"><i class="fa fa-folder-open fa-fw"></i><md-tooltip md-direction="left"><span translate="OPENFILE"></span></md-tooltip></label>
+  </div>
+  <div style="position:absolute;right:48px;top:66px" ng-show="self.selectedTab > 0">
+    <md-button class="md-icon-button" ng-click="self.downloadAutomatonFromTab(self.openTabs[self.selectedTab-1],$event)" aria-label="download"><i class="fa fa-fw fa-download"></i><md-tooltip md-direction="left"><span translate="MENUDOWNLOAD"></span></md-tooltip></md-button>
+  </div>  
+
+  <div style="position:absolute;right:64px;top:66px;width:150px" ng-show="self.selectedTab == 0">
+    <md-input-container md-no-float="" style="margin:4px">
+      <i class="fa fa-fw fa-search" style="position:absolute;left:0px;top:8px"></i>
+      <input style="padding-left:28px" type="text" ng-model-options="{ debounce: 500 }" ng-model="self.searchTerm" placeholder="{{'SEARCH' | translate}}">
+    </md-input-container>
+  </div>  
+
+  <svg style="position:absolute;top:-100px;" id="emptysvg" xmlns="http://www.w3.org/2000/svg" version="1.1" height="2"/>
+
+  <div style="position:absolute;left:0;top:112px;right:0px;bottom:0px">
+
+    <md-content ng-show="self.selectedTab == 0" layout-fill style="max-height: 100%;  height: 100%; overflow:auto; position: absolute;">
+     <div infinite-scroll="self.loadMoreAutomatons()" infinite-scroll-parent="true" infinite-scroll-distance="1">
+       <div ng-repeat="a in self.automatons | filter:self.searchTerm | limitTo:self.loadedAutomatonCount track by a.ID" class="flaciItemCard md-whiteframe-z2" layout-padding>
+            <div layout-padding layout="column" layout-align-gt-sm="row" layout-align="space-between center">
+              <div ng-if="a.Description && a.Description != ''" style="position:absolute;z-index:2;background:white;padding:16px;left:0;bottom:0;width:100%"><div style="text-overflow:ellipsis;white-space:nowrap;overflow:hidden">{{a.Description}}</div>
+                <div style="position:absolute;z-index:2;font-weight:bold;box-shadow: 1px 1px 2px rgba(0,0,0,0.3);bottom:calc(100% - 6px);right:12px;padding:4px;font-size:90%;background:white" ng-switch="a.Type">
+                  <span ng-switch-when="DEA" translate="AUTOEDIT.TYPEDEASHORT"></span>
+                  <span ng-switch-when="NEA" translate="AUTOEDIT.TYPENEASHORT"></span>
+                  <span ng-switch-when="MEALY" translate="AUTOEDIT.TYPEMEALYSHORT"></span>
+                  <span ng-switch-when="MOORE" translate="AUTOEDIT.TYPEMOORESHORT"></span>
+                  <span ng-switch-when="DKA" translate="AUTOEDIT.TYPEDKASHORT"></span>
+                  <span ng-switch-when="NKA" translate="AUTOEDIT.TYPENKASHORT"></span>
+                  <span ng-switch-when="TM" translate="AUTOEDIT.TYPETMSHORT"></span>
+                </div>
+              </div>
+              
+              <div style="position:absolute;z-index:2;font-weight:bold;box-shadow: 1px 1px 2px rgba(0,0,0,0.3);bottom:12px;right:12px;padding:4px;font-size:90%;background:white" ng-switch="a.Type" ng-if="!a.Description || a.Description == ''">
+                <span ng-switch-when="DEA" translate="AUTOEDIT.TYPEDEASHORT"></span>
+                <span ng-switch-when="NEA" translate="AUTOEDIT.TYPENEASHORT"></span>
+                <span ng-switch-when="MEALY" translate="AUTOEDIT.TYPEMEALYSHORT"></span>
+                <span ng-switch-when="MOORE" translate="AUTOEDIT.TYPEMOORESHORT"></span>
+                <span ng-switch-when="DKA" translate="AUTOEDIT.TYPEDKASHORT"></span>
+                <span ng-switch-when="NKA" translate="AUTOEDIT.TYPENKASHORT"></span>
+                <span ng-switch-when="TM" translate="AUTOEDIT.TYPETMSHORT"></span>
+              </div>
+
+
+              <div class="cardTitle">
+                <div style="float:right;padding:0px">
+                  <i ng-show="a.Public == 1" class="fa fa-fw fa-globe"></i>
+
+                  <md-menu style="padding:0px">
+                    <md-button ng-click="$mdOpenMenu($event)" class="md-no-style" style="min-width: 1em;  min-height: 1em;line-height: 1em;" aria-label="menu">
+                      <i class="fa fa-bars"></i>
+                    </md-button>
+                    <md-menu-content>
+                      <md-menu-item><md-button ng-click="self.editAutomaton(a,$event)" aria-label="edit"><i class="fa fa-fw fa-pencil"></i> <span translate="MENUCHANGE"></span></md-button></md-menu-item>
+                      <md-menu-item><md-button ng-click="self.duplicateAutomaton(a,$event)" aria-label="duplicate"><i class="fa fa-fw fa-copy"></i> <span translate="MENUDUPLICATE"></span></md-button></md-menu-item>
+                      <md-menu-item ng-show="self.userLogin.isPublisher && a.Public == 1"><md-button ng-click="self.unpublishAutomaton(a,$event)" aria-label="unpublish"><i class="fa fa-fw fa-globe"></i> <span translate="MENUUNPUBLISH"></span></md-button></md-menu-item>
+                      <md-menu-item ng-show="self.userLogin.isPublisher && a.Public == 0"><md-button ng-click="self.publishAutomaton(a,$event)" aria-label="publish"><i class="fa fa-fw fa-globe"></i> <span translate="MENUPUBLISH"></span></md-button></md-menu-item>
+                      <md-menu-item ng-show="a.ID.indexOf('local') == -1"><md-button ng-click="self.getWeblink(a,$event)" aria-label="weblink"><i class="fa fa-fw fa-link"></i> <span translate="MENULINK"></span></md-button></md-menu-item>
+                      <md-menu-item><md-button ng-click="self.downloadAutomaton(a,$event)" aria-label="download"><i class="fa fa-fw fa-download"></i> <span translate="MENUDOWNLOAD"></span></md-button></md-menu-item>
+                      <md-menu-item><md-button ng-click="self.deleteAutomaton(a,$event)" aria-label="delete"><i class="fa fa-fw fa-trash"></i> <span translate="MENUDELETE"></span></md-button></md-menu-item>
+                     </md-menu-content>
+                  </md-menu>
+                </div> 
+                <big><b>{{a.Name}}</b></big> 
+              </div>
+              <div class="cardLastChange"><span translate="LASTCHANGE"></span>: {{a.lastChange()}}</div>
+              <div class="cardImage" ng-click="self.openAutomaton(a,$event)">
+                
+             <svg xmlns="http://www.w3.org/2000/svg"
+                  width="264" height="170" style="font-family:Roboto,'Helvetica Neue',sans-serif;min-width:100%; min-height:100%; display: block;position:absolute;pointer-events:none;top:0;left:0">
+              <g ng-attr-transform="scale(0.4,0.4) translate({{(-a.thumbAutomaton.centerX*0.75+264)+','+(-a.thumbAutomaton.centerY*0.75+170)}})">
+               <!-- TransitionLines -->
+               <g ng-repeat="s in a.thumbAutomaton.States track by s.ID">
+                 <g ng-if="s.Start">
+                   <line class="transitionLine" ng-attr-x1="{{s.x}}" ng-attr-y1="{{s.y}}" ng-attr-x2="{{s.x-s.Radius*3}}" ng-attr-y2="{{s.y}}"/> 
+                   <text class="startLabel" cx="0" cy="0" ng-attr-transform="{{'translate('+(s.x-s.Radius*3)+','+(s.y-10)+')'}}">Start</text>
+                   <polygon class="transitionArrow" 
+                            ng-attr-points="{{(s.x-s.Radius)+','+s.y+' '+(s.x-s.Radius-15)+','+(s.y-7.5)+' '+(s.x-s.Radius-15)+','+(s.y+7.5)}}" />
+                 </g>
+                 <g ng-repeat="t in s.Transitions" class="transition">
+                   <path class="transitionLine" ng-attr-d="{{a.thumbAutomaton.getTransitionPath(s,a.thumbAutomaton.States[t.Target],t)}}"/>
+                   <polygon class="transitionArrow" ng-attr-points="{{a.thumbAutomaton.getArrowPoints(t)}}" />
+                 </g>
+               </g> 
+               <!-- States -->
+               <g ng-repeat="s in a.thumbAutomaton.States" ng-attr-transform="translate({{s.x}},{{s.y}})">
+                 <circle class="state" cx="0" cy="0" ng-attr-r="{{s.Radius}}"/>
+                 <circle class="stateInnerCircle" ng-if="s.Final" cx="0" cy="0" ng-attr-r="{{s.Radius*0.8}}"/>
+                 <text ng-if="a.Type != 'MOORE'" class="stateName" cx="50%" cy="50%">{{self.limitTextLength(s.Name,5)}}</text>
+                 <text ng-if="a.Type == 'MOORE'" style="font-size:80%" class="stateName" y="-12">{{self.limitTextLength(s.Name,5)}}</text>
+                 <text ng-if="a.Type == 'MOORE'" style="font-size:80%"  class="stateName" y="12">{{self.limitTextLength(s.Output,5)}}</text>
+                 <line ng-if="a.Type == 'MOORE'" class="transitionLine" ng-attr-x1="{{s.Radius*-0.7}}" ng-attr-x2="{{s.Radius*0.7}}"/>
+
+               </g>
+               <!-- Labels -->
+               <g ng-repeat="s in a.thumbAutomaton.States">
+                 <g ng-repeat="t in s.Transitions" class="transition" ng-attr-transform="translate({{t.textPoint.x}},{{t.textPoint.y}})">
+                   <text x="0" y="0" ng-attr-class="{{'transitionLabelText labelAlign_'+t.textAlign+' labelVAlign_'+t.textVAlign}}" >
+                     <tspan ng-if="a.Type == 'DEA' || a.Type == 'NEA' || a.Type == 'MOORE'" ng-repeat="la in t.Labels track by $index"
+                            ng-class="{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{(la === '' ? '&epsilon;':la) + (!$last ? ', ':'')}}</tspan>
+                     <tspan ng-if="a.Type == 'MEALY'" ng-repeat="la in t.Labels track by $index" x="0" 
+                            ng-attr-y="{{((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"  ng-class="{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{la[0] + " / "+ la[1]}}</tspan>
+
+                     <tspan ng-if="a.Type == 'DKA' || a.Type == 'NKA'" ng-repeat="la in t.Labels track by $index" x="0" 
+                            ng-attr-y="{{((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"
+                            ng-class="{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{'('+(la[0] === '' ? '&epsilon;' : la[0])+','+(la[1] === '' ? '&epsilon;' : la[1])+'):'+(la[2].length == 0 ? '&epsilon;' : la[2].join(""))}}</tspan>
+                     <tspan ng-if="a.Type == 'TM'" ng-repeat="la in t.Labels track by $index" x="0"
+                            ng-attr-y="{{((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"
+                            ng-class="{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{la[0]+':'+la[1]+','+la[2]}}</tspan>
+                   </text>
+                 </g>
+               </g> 
+              </g> 
+             </svg>
+
+              </div>              
+            </div>
+          </div>
+         </div>
+        </md-content>
+        <md-button ng-show="self.selectedTab == 0" class="md-fab md-primary md-hue-1 addButton" aria-label="New Automaton" ng-click="self.createAutomaton($event)">
+          <i class="fa fa-plus fa-fw"></i>
+          <md-tooltip md-direction="top"><span translate="AUTOEDIT.CREATENEWAUTOMATON"></span></md-tooltip>
+        </md-button>
+
+        <md-content ng-show="self.selectedTab == $index+1" ng-click="a.closePopupPanels()" ng-repeat="a in self.openTabs" layout-fill style="max-height: 100%;  height: 100%; position: absolute;" >
+
+          <!-- Alphabete / Definition -->
+          <div ng-show="a.selectedTab != -1" style="position:absolute;top:0px;left:0px;bottom:0px;width:320px;background:white" class="md-whiteframe-z2">
+            <!-- Definition -->
+            <div ng-show="a.selectedTab == 0" style="position:absolute;top:48px;left:0px;right:0px;bottom:0px;overflow:auto">
+              <div ng-if="a.Description && a.Description != ''" layout-padding><p style="color:#0376bd;margin:0;padding-left:2em;margin-top:0.5em;margin-bottom:-0.5em"><i style="position:absolute;margin-left:-1.5em;margin-top:-1px" class="fa fa-comment fa-fw"></i> <span>{{a.Description}}</span></p></div>
+
+              <div layout-padding>
+                <p ng-if="a.Type == 'DEA'" style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-info fa-fw"></i> <span translate="AUTOEDIT.DEFDEA"></span></p>
+                <p ng-if="a.Type == 'NEA'" style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-info fa-fw"></i> <span translate="AUTOEDIT.DEFNEA"></span></p>
+                <p ng-if="a.Type == 'MEALY'" style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-info fa-fw"></i> <span translate="AUTOEDIT.DEFMEALY"></span></p>
+                <p ng-if="a.Type == 'MOORE'" style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-info fa-fw"></i> <span translate="AUTOEDIT.DEFMOORE"></span></p>
+                <p ng-if="a.Type == 'DKA'" style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-info fa-fw"></i> <span translate="AUTOEDIT.DEFDKA"></span></p>
+                <p ng-if="a.Type == 'NKA'" style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-info fa-fw"></i> <span translate="AUTOEDIT.DEFNKA"></span></p>
+                <p ng-if="a.Type == 'TM'" style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-info fa-fw"></i> <span translate="AUTOEDIT.DEFTM"></span></p>
+              </div>
+              <div ng-if="a.Type == 'DEA' || a.Type == 'MEALY' || a.Type == 'MOORE'" style="margin-top:-16px">
+                <md-switch style="margin:0; margin-left:40px" ng-change="a.checkAutomaton(false); a.makeUndoStep();a.askRemoveTrapStates($event)" ng-model="a.automaton.allowPartial" aria-label="allow partial"><span ng-if="a.Type == 'DEA' || a.Type == 'MOORE'" translate="AUTOEDIT.ALLOWPARTIAL"></span><span ng-if="a.Type == 'MEALY'" translate="AUTOEDIT.ALLOWPARTIAL2"></span></md-switch>
+              </div>
+              
+            </div>
+
+            <!-- Alphabet -->
+            <div ng-show="a.selectedTab == 1" style="position:absolute;top:48px;left:0px;right:0px;bottom:0px;overflow:auto">
+              <div layout-padding layout-margin>
+                <b translate="AUTOEDIT.INPUTALPHABET" style="margin:0;padding:0"></b>
+                <br>
+
+                <md-radio-group ng-model="a.selectedAlphabet" ng-change="a.parseUserAlphabet()">
+                  <md-radio-button value="A0">&Sigma;<sub>1</sub> = { a, b, c }</md-radio-button>
+                  <md-radio-button value="A1">&Sigma;<sub>2</sub> = { a, b, c, ..., z }</md-radio-button>
+                  <md-radio-button value="A2">&Sigma;<sub>3</sub> = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }</md-radio-button>
+                  <md-radio-button value="A3">&Sigma;<sub>4</sub> = { &#9829;, &#9992;, &#9993;, &#9998;, &#10006;, &#10052; }</md-radio-button>
+                  <md-radio-button value="A4">&Sigma;<sub>5</sub>  
+                    <span ng-if="a.userAlphabet.length == 0" translate="AUTOEDIT.CREATEALPHABET"></span>
+                    <span ng-if="a.userAlphabet.length > 0">= { 
+                      <span ng-repeat="c in a.userAlphabet">   
+                        <span class="borderLabel">{{c}}</span>
+                        <span ng-if="!$last"> , </span>
+                      </span> }
+                    </span>
+                  </md-radio-button>
+                </md-radio-group>           
+                <md-input-container layout-fill ng-if="a.selectedAlphabet == 'A4'">
+                  <label translate="AUTOEDIT.ALHABETCHARS"></label>
+                  <input ng-model="a.userAlphabetInput" id="userAlphabetInput" ng-change="a.parseUserAlphabet()" ng-model-options="{ debounce: 1000 }">
+                </md-input-container>         
+              </div>
+              <div layout-padding layout-margin ng-if="a.Type == 'DKA' || a.Type == 'NKA' || a.Type == 'TM'">
+                <b ng-if="a.Type == 'DKA' || a.Type == 'NKA'" translate="AUTOEDIT.STACKALPHABET" style="margin:0;padding:0"></b> 
+                <b ng-if="a.Type == 'TM'" translate="AUTOEDIT.TAPEALPHABET" style="margin:0;padding:0"></b> 
+                <br>
+                <md-radio-group ng-model="a.selectedStackAlphabet" ng-change="a.parseUserAlphabet()">
+                  <md-radio-button value="A0">Γ<sub>1</sub> = { <b>|</b> }</md-radio-button>
+                  <md-radio-button value="A1">Γ<sub>2</sub> = { <b>0</b>, a, b, c }</md-radio-button>
+                  <md-radio-button value="A2">Γ<sub>3</sub> = { <b>$</b>, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }</md-radio-button>
+                  <md-radio-button value="A3">Γ<sub>4</sub> = { <b>&#9679;</b>, &#9829;, &#9992;, &#9993;, &#9998;, &#10006;, &#10052; }</md-radio-button>
+                  <md-radio-button value="A4">Γ<sub>5</sub>  
+                    <span ng-if="a.userStackAlphabet.length == 0" translate="AUTOEDIT.CREATEALPHABET"></span>
+                    <span ng-if="a.userStackAlphabet.length > 0">= { 
+                      <span ng-repeat="c in a.userStackAlphabet">   
+                        <span class="borderLabel" ng-style="{'font-weight':$index == 0 ? 'bold':''}">{{c}}</span>
+                        <span ng-if="!$last"> , </span>
+                      </span> }
+                    </span>
+                  </md-radio-button>
+                </md-radio-group>           
+                <md-input-container layout-fill ng-if="a.selectedStackAlphabet == 'A4'">
+                  <label translate="AUTOEDIT.ALHABETCHARS"></label>
+                  <input ng-model="a.userStackAlphabetInput" id="userStackAlphabetInput" ng-change="a.parseUserAlphabet()" ng-model-options="{ debounce: 1000 }">
+                </md-input-container>   
+                <b ng-if="a.Type != 'TM'" style="margin:0;padding:0" translate="AUTOEDIT.INITIALSTACKCHAR"></b>
+                <b ng-if="a.Type == 'TM'" style="margin:0;padding:0" translate="AUTOEDIT.INITIALTAPECHAR"></b>
+                  : <b style="margin:0;padding:0">{{a.automaton.StackAlphabet.length > 0 ? a.automaton.StackAlphabet[0] : '?'}}</b>    
+              </div>
+              <div layout-padding layout-margin ng-if="a.Type == 'MOORE' || a.Type == 'MEALY'">
+                <b translate="AUTOEDIT.OUTPUTALPHABET" style="margin:0;padding:0"></b> 
+                <br>
+                <md-radio-group ng-model="a.selectedStackAlphabet" ng-change="a.parseUserAlphabet()">
+                  <md-radio-button value="A0">∆<sub>1</sub> = { | }</md-radio-button>
+                  <md-radio-button value="A1">∆<sub>2</sub> = { 0, a, b, c }</md-radio-button>
+                  <md-radio-button value="A2">∆<sub>3</sub> = { $, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }</md-radio-button>
+                  <md-radio-button value="A3">∆<sub>4</sub> = { &#9679;, &#9829;, &#9992;, &#9993;, &#9998;, &#10006;, &#10052; }</md-radio-button>
+                  <md-radio-button value="A4">∆<sub>5</sub>  
+                    <span ng-if="a.userStackAlphabet.length == 0" translate="AUTOEDIT.CREATEALPHABET"></span>
+                    <span ng-if="a.userStackAlphabet.length > 0">= { 
+                      <span ng-repeat="c in a.userStackAlphabet">   
+                        <span class="borderLabel">{{c}}</span>
+                        <span ng-if="!$last"> , </span>
+                      </span> }
+                    </span>
+                  </md-radio-button>
+                </md-radio-group>           
+                <md-input-container layout-fill ng-if="a.selectedStackAlphabet == 'A4'">
+                  <label translate="AUTOEDIT.ALHABETCHARS"></label>
+                  <input ng-model="a.userStackAlphabetInput" id="userStackAlphabetInput" ng-change="a.parseUserAlphabet()" ng-model-options="{ debounce: 1000 }">
+                </md-input-container>   
+              </div>
+            </div>
+
+         </div>
+  
+         <md-toolbar class="md-hue-2" style="position:absolute;top:0px;left:0px; min-height: 48px;  height: 48px;" layout="row">
+           <md-button style="text-transform:none;min-width: 1em;" ng-click="a.selectedTab = a.selectedTab == 0 ? -1 : 0" ng-class="{'md-accent':a.selectedTab == 0}"><i class="fa fa-fw fa-info-circle"></i> <span hide-xs translate="AUTOEDIT.DEFINITION"></span></md-button>
+           <md-button style="text-transform:none;min-width: 1em;" ng-click="a.selectedTab = a.selectedTab == 1 ? -1 : 1" ng-class="{'md-accent':a.selectedTab == 1}"><big style="font-size: 150%; vertical-align: middle">&Sigma;</big> <span hide-xs ng-if="a.Type == 'DEA' || a.Type == 'NEA' || a.Type == 'MEALY' || a.Type == 'MOORE' ||a.Type == 'TM'"><span hide-xs translate="ALPHABET"></span></span>
+            <span ng-if="a.Type == 'DKA' || a.Type == 'NKA'"><span translate="ALPHABETS"></span></span></md-button>
+           <span style="margin-left:8px;"></span>
+           <md-button ng-click="a.addState()" style="min-width: 1em;" aria-label="add state">
+             <i class="fa fa-plus-circle"></i>
+             <md-tooltip direction="top"><span translate="AUTOEDIT.CREATENEWSTATE"></span></md-tooltip>
+           </md-button>
+           <md-button ng-click="a.toggleTransitionClickMode();" style="min-width: 1em;" aria-label="transition mode">
+             <i class="fa fa-long-arrow-right" style="transform:rotate(-45deg)" ng-class="{'faa-flash animated':a.transitionClickMode}"></i>
+             <md-tooltip direction="top"><span translate="AUTOEDIT.CREATENEWTRANSITION"></span></md-tooltip>
+           </md-button>
+           <md-button ng-if="a.Type == 'DEA' || a.Type == 'NEA'" style="min-width: 1em;" ng-click="a.editDeltaTable($event)" aria-label="table">
+             <i class="fa fa-fw fa-table"></i>
+             <md-tooltip direction="top"><span translate="AUTOEDIT.DELTATABLE"></span></md-tooltip>
+           </md-button>
+           <md-button ng-click="a.undo()" ng-disabled="a.historyPointer == 0" style="min-width: 1em;" aria-label="undo">
+             <i class="fa fa-undo"></i>
+             <md-tooltip direction="top"><span translate="UNDO"></span></md-tooltip>
+           </md-button>
+           <md-button ng-click="a.redo()" ng-disabled="a.historyPointer == a.history.length-1" style="min-width: 1em;" aria-label="redo">
+             <i class="fa fa-undo fa-flip-horizontal"></i>
+             <md-tooltip direction="top"><span translate="REDO"></span></md-tooltip>
+           </md-button>
+           <md-button ng-click="a.autoLayout()" style="min-width: 1em;" aria-label="auto layout">
+             <i class="fa fa-magic"></i>
+             <span hide-xs hide-sm hide-md style="text-transform:none" translate="AUTOEDIT.AUTOLAYOUTGRAPH"></span>
+             <md-tooltip hide-gt-md direction="top"><span translate="AUTOEDIT.AUTOLAYOUTGRAPH"></span></md-tooltip>
+           </md-button>
+           <md-button ng-click="a.checkAutomaton(true)" style="min-width: 1em;" aria-label="check">
+             <i class="fa fa-check-circle fa-fw"></i> 
+             <span hide-xs hide-sm hide-md style="text-transform:none" translate="AUTOEDIT.CHECKAUTOMATON"></span>
+             <md-tooltip hide-gt-md direction="top"><span translate="AUTOEDIT.CHECKAUTOMATON"></span></md-tooltip>
+           </md-button>
+
+           <md-button ng-click="a.toggleSimulation();" style="min-width: 1em;" aria-label="check" ng-class="{'md-accent':a.showSimulationPanel == true}">
+             <i class="fa fa-play fa-fw"></i> 
+             <span hide-xs hide-sm hide-md style="text-transform:none" translate="AUTOEDIT.SIMULATION"></span>
+             <md-tooltip hide-gt-md direction="top"><span translate="AUTOEDIT.SIMULATION"></span></md-tooltip>
+           </md-button>
+
+
+           <md-menu style="margin:0" >
+             <md-button ng-click="$mdOpenMenu($event)" style="min-width:3em; margin: 5px;" aria-label="transform" ng-disabled="a.Type != 'DEA' && a.Type != 'NEA' && a.Type != 'NKA'">
+               <i class="fa fa-fw fa-industry"></i> 
+               <span hide-xs hide-sm hide-md style="text-transform:none" translate="AUTOEDIT.TRANSFORMATIONS"></span>
+               <md-tooltip hide-gt-md direction="top"><span translate="AUTOEDIT.TRANSFORMATIONS"></span></md-tooltip>
+             </md-button>
+             <md-menu-content>
+               <md-menu-item layout="row" ng-if="a.Type == 'NEA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.transformNEAeToNEA()" class="md-primary">
+                   <span translate="AUTOEDIT.TRANSFORM.NEAWITHOUTEPSILON"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.NEAWITHOUTEPSILONHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+
+               <md-menu-item layout="row" ng-if="a.Type == 'NEA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.optimizeNEA()" class="md-primary">
+                   <span translate="AUTOEDIT.TRANSFORM.OPTIMIZENEA"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.OPTIMIZENEAHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+
+               <md-menu-item layout="row" ng-if="a.Type == 'DEA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.transformMinimalDEA()" class="md-primary" aria-label="minimal DFA">
+                   <span translate="AUTOEDIT.TRANSFORM.MINIMALDEA"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.MINIMALDEAHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+               <md-menu-item layout="row" ng-if="a.Type == 'DEA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.combineTwoEA($event)" class="md-primary" aria-label="combine two FA">
+                   <span translate="AUTOEDIT.TRANSFORM.COMBINETWOEA"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.COMBINETWOEAHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+               <md-menu-item layout="row" ng-if="a.Type == 'NKA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.NKA7to6tuple()" class="md-primary">
+                   <span translate="AUTOEDIT.TRANSFORM.7TO6TUPLENKA"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.7TO6TUPLENKAHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+             </md-menu-content>
+           </md-menu>
+
+
+           <md-menu style="margin:0">
+             <md-button ng-click="$mdOpenMenu($event)" style="min-width:3em; margin: 5px;" aria-label="transform" >
+               <i class="fa fa-fw fa-external-link"></i>
+               <span hide-xs hide-sm hide-md style="text-transform:none" translate="AUTOEDIT.CONVERTS"></span>
+               <md-tooltip hide-gt-md direction="top"><span translate="AUTOEDIT.CONVERTS"></span></md-tooltip>
+             </md-button>
+             <md-menu-content>
+
+               <md-menu-item layout="row" ng-if="a.Type == 'DEA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.transformDEAtoNEA()" class="md-primary" aria-label="DFA to NFA">
+                   <span translate="AUTOEDIT.TRANSFORM.DEATONEA"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.DEATONEAHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+               <md-menu-item layout="row" ng-if="a.Type == 'NEA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.transformNEAtoDEA()" class="md-primary" aria-label="NFA to DFA">
+                   <span translate="AUTOEDIT.TRANSFORM.NEATODEA"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.NEATODEAHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+
+               <md-menu-item layout="row" ng-if="a.Type == 'DEA' || a.Type == 'NEA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.transformEAtoGrammar()" class="md-primary" aria-label="to grammar">
+                   <span translate="AUTOEDIT.TRANSFORM.TOGRAMMAR"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.TOGRAMMARHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+               <md-menu-item layout="row" ng-if="a.Type == 'DKA' || a.Type == 'NKA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.transformKAtoGrammar()" class="md-primary" aria-label="to grammar">
+                   <span translate="AUTOEDIT.TRANSFORM.TOGRAMMAR"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.TOGRAMMARHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+               <md-menu-item layout="row" ng-if="a.Type == 'DEA' || a.Type == 'NEA'">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.transformEAtoRegExp()" class="md-primary" aria-label="to regexp">
+                   <span translate="AUTOEDIT.TRANSFORM.EATOREGEXP"></span> 
+                 </md-button>
+                 <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="a.showHint('AUTOEDIT.TRANSFORM.EATOREGEXPHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary" aria-label="hint">
+                   <i class="fa fa-question-circle fa-fw"></i>
+                 </md-button>
+               </md-menu-item>
+
+               <md-menu-item layout="row">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.downloadSVG()" class="md-primary" aria-label="download svg">
+                   <span translate="AUTOEDIT.TRANSFORM.DOWNLOADGRAPHSVG"></span> 
+                 </md-button>
+               </md-menu-item>
+               <md-menu-item layout="row">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.downloadPNG()" class="md-primary" aria-label="download png">
+                   <span translate="AUTOEDIT.TRANSFORM.DOWNLOADGRAPHPNG"></span> 
+                 </md-button>
+               </md-menu-item>
+               
+               <md-menu-item layout="row" ng-if="a.Type != 'MEALY' && a.Type != 'MOORE' ">
+                 <md-button flex style="text-align:left;text-transform: initial;" ng-click="a.transformtoLatex()" class="md-primary" aria-label="latex">
+                   <span translate="AUTOEDIT.TRANSFORM.TRANSFORMTOLATEX"></span> 
+                 </md-button>
+               </md-menu-item>
+               
+             </md-menu-content>
+           </md-menu>
+
+         </md-toolbar>
+         <!-- Übergangsgraph -->
+         <div style="position:absolute;top:0px;left:0px;bottom:0px"  
+              ng-style="{'right': a.selectedTab2 >= 0 ? '320px':'0px','left':a.selectedTab == -1 ?'0px':'320px','bottom':a.showSimulationPanel ? '30%' :'0px'}">
+
+           <div style="position:absolute; width: 100%; top:48px;bottom:0px" ng-style="{'width': a.showSimulationPanel ? 'calc(100% - 320px)' :'100%'}">
+             <div style="position:absolute; width: 100%; top:0px;bottom:0px; overflow:auto" ng-attr-id="SVGArea{{a.ID}}" 
+                  ng-mousemove="a.moveDrag($event)" ng-mouseup="a.endDrag($event)" ng-mousedown="a.unselectClick()" touchevents touchpassdefault="true">
+
+               <svg ng-attr-id="{{'svg'+a.ID}}" xmlns="http://www.w3.org/2000/svg" class="transitionGraph zoom{{a.automatonGraphZoom}}"
+                    width="1920" height="1080">
+                 <!-- TransitionLines -->
+                 <g ng-repeat="s in a.States" style="pointer-events:stroke;">
+
+                   <g ng-if="s.Start">
+                     <line class="transitionLine" ng-attr-x1="{{s.x}}" ng-attr-y1="{{s.y}}" ng-attr-x2="{{s.x-s.Radius*3}}" ng-attr-y2="{{s.y}}"/> 
+                     <text cx="0" cy="0" ng-attr-transform="{{'translate('+(s.x-s.Radius*3)+','+(s.y-10)+')'}}" style="font-size:80%">Start</text>
+                     <polygon class="transitionArrow" 
+                              ng-attr-points="{{(s.x-s.Radius)+','+s.y+' '+(s.x-s.Radius-15)+','+(s.y-7.5)+' '+(s.x-s.Radius-15)+','+(s.y+7.5)}}" />
+                   </g>
+
+                   <g ng-repeat="t in s.Transitions" class="transition">
+                     <path class="transitionLine" ng-attr-d="{{a.getTransitionPath(s,a.States[t.Target],t)}}"/>
+                     <path class="transitionHiddenLine" ng-click="!a.wasDragged && a.openLabelChoose(t,$event)" touchevents
+                           ng-class="{'selected':a.selectedTransition == t, 'error':t.hasError, 'play':t.play}" 
+                           ng-attr-d="{{a.getTransitionPath(s,a.States[t.Target],t)}}" 
+                           ng-mousedown="!a.transitionClickMode && a.startDrag(t,$event,s.ID != a.States[t.Target].ID ? a.getAngleRad(s,a.States[t.Target],-90) : 0)"/>
+                     <polygon class="transitionArrow" ng-attr-points="{{a.getArrowPoints(t)}}" />
+  <!--
+                  <circle ng-style="{'fill':'#f00'}" style="stroke-width: 0px;" ng-attr-cx="{{t.pathPoints[0].x}}" ng-attr-cy="{{t.pathPoints[0].y}}" r="3"/>
+                  <circle ng-style="{'fill':'#f00'}" style="stroke-width: 0px;" ng-attr-cx="{{t.pathPoints[1].x}}" ng-attr-cy="{{t.pathPoints[1].y}}" r="3"/>
+                  <circle ng-style="{'fill':'#00f'}" style="stroke-width: 0px;" ng-attr-cx="{{t.arrowPoints[0].x}}" ng-attr-cy="{{t.arrowPoints[0].y}}" r="3"/>
+                  <circle ng-style="{'fill':'#00f'}" style="stroke-width: 0px;" ng-attr-cx="{{t.arrowPoints[1].x}}" ng-attr-cy="{{t.arrowPoints[1].y}}" r="3"/>
+                  <circle ng-style="{'fill':'#0f0'}" style="stroke-width: 0px;" ng-attr-cx="{{t.arrowPoints[2].x}}" ng-attr-cy="{{t.arrowPoints[2].y}}" r="3"/>
+                  <circle ng-style="{'fill':'#0f0'}" style="stroke-width: 0px;" ng-attr-cx="{{t.arrowPoints[3].x}}" ng-attr-cy="{{t.arrowPoints[3].y}}" r="3"/>
+                  <circle ng-style="{'fill':'#0ff'}" style="stroke-width: 0px;" ng-attr-cx="{{t.textPoint.x}}" ng-attr-cy="{{t.textPoint.y}}" r="3"/>
+  -->
+                   </g>
+                 </g> 
+
+                 <!-- States -->
+                 <g ng-mousedown="a.startDrag(s,$event)" ng-repeat="s in a.States" ng-attr-transform="translate({{s.x}},{{s.y}})"
+                    style="pointer-events:auto;cursor:pointer" ng-mouseover="a.newTransition && (a.selectedState = s)" touchevents
+                    ng-mouseout="a.newTransition && (a.selectedState = null)" ng-click="a.openStateChoose(s,$event);">
+                   <circle class="stateHiddenCircle" ng-class="{'selected':a.selectedState == s, 'error':s.hasError, 'play':s.play}" 
+                           cx="0" cy="0" ng-attr-r="{{s.Radius}}"/>  
+                   <circle class="state" cx="0" cy="0" ng-attr-r="{{s.Radius}}" ng-class="{'selectedState':a.selectedState == s, 'play':s.play}"/>
+                   <circle class="stateInnerCircle" ng-if="s.Final" cx="0" cy="0" ng-attr-r="{{s.Radius*0.8}}"/>
+                   <text ng-if="a.Type != 'MOORE'" class="stateName" cx="50%" cy="50%">{{self.limitTextLength(s.Name,5)}}</text>
+                   <text ng-if="a.Type == 'MOORE'" style="font-size:80%" class="stateName" y="-12">{{self.limitTextLength(s.Name,5)}}</text>
+                   <text ng-if="a.Type == 'MOORE'" style="font-size:80%"  class="stateName" y="12">{{self.limitTextLength(s.Output,5)}}</text>
+                   <line ng-if="a.Type == 'MOORE'" class="transitionLine" ng-attr-x1="{{s.Radius*-0.7}}" ng-attr-x2="{{s.Radius*0.7}}"/>
+
+                   <circle class="stateHiddenOuterCircle" cx="0" cy="0" ng-attr-r="{{s.Radius+5}}"
+                           ng-mousedown="!a.transitionClickMode && (a.transitionCircleMode = true)" touchevents/>
+                 </g>
+
+                 <!-- newTransitionLine -->
+                 <g ng-if="a.newTransition">
+                   <circle ng-if="a.newTransitionBuildState" class="state newState" cx="0" cy="0" ng-attr-transform="translate({{a.newTransition.pathPoints[1].x}},{{a.newTransition.pathPoints[1].y}})" ng-attr-r="{{a.isDragging.Radius}}" />
+                   <line class="newTransitionLine" 
+                         ng-attr-x1="{{a.newTransition.pathPoints[0].x}}" ng-attr-y1="{{a.newTransition.pathPoints[0].y}}" 
+                         ng-attr-x2="{{a.newTransition.pathPoints[1].x}}" ng-attr-y2="{{a.newTransition.pathPoints[1].y}}"/> 
+                   <polygon class="newTransitionArrow" ng-attr-points="{{a.getArrowPoints(a.newTransition)}}" />
+                 </g> 
+
+                 <!-- Labels -->
+                 <g ng-repeat="s in a.States" style="pointer-events:auto;">
+                   <g ng-repeat="t in s.Transitions" class="transition" ng-attr-transform="translate({{t.textPoint.x}},{{t.textPoint.y}})">
+                     <text ng-click="!a.wasDragged && a.openLabelChoose(t,$event)" cx="0" cy="0" touchevents
+                           ng-mousedown="!a.transitionClickMode && a.startDrag(t,$event,s.ID != a.States[t.Target].ID ? a.getAngleRad(s,a.States[t.Target],-90) : 0)" ng-attr-class="{{'transitionLabelText labelAlign_'+t.textAlign+' labelVAlign_'+t.textVAlign}}" y="0" x="0" ng-class="{'error':t.hasLabelErrors.indexOf($index) != -1}">
+                       <tspan ng-if="a.Type == 'DEA' || a.Type == 'NEA' || a.Type == 'MOORE'" ng-repeat="la in t.Labels track by $index"  
+                              ng-class="{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{(la === '' ? '&epsilon;':la) + (!$last ? ', ':'')}}</tspan>
+
+                       <tspan ng-if="a.Type == 'MEALY'" ng-repeat="la in t.Labels track by $index" x="0" 
+                              ng-attr-y="{{((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"  ng-class="{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{la[0] + " / "+ la[1]}}</tspan>
+
+                       <tspan ng-if="a.Type == 'DKA' || a.Type == 'NKA'" ng-repeat="la in t.Labels track by $index" x="0" 
+                              ng-attr-y="{{((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"
+                              ng-class="{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{'('+(la[0] === '' ? '&epsilon;' : la[0])+','+(la[1] === '' ? '&epsilon;' : la[1])+'):'+(la[2].length == 0 ? '&epsilon;' : la[2].join(""))}}</tspan>
+                       <tspan ng-if="a.Type == 'TM'" ng-repeat="la in t.Labels track by $index" x="0"
+                              ng-attr-y="{{((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"
+                              ng-class="{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{la[0]+':'+la[1]+','+la[2]}}</tspan>
+                     </text>
+
+                   </g>
+                 </g> 
+               </svg>
+             </div>
+
+             <div class="tapePanel" id="tapePanel" ng-if="a.Type == 'TM' && a.showSimulationPanel && a.currentTraceItem">
+               <div class="tapePanelLabel"><span translate="AUTOEDIT.TAPE"></span>:</div>
+               <div class="tapePanelBlock noBorder">
+                 <span>...</span>
+               </div>
+               <div class="tapePanelBlock" ng-class="{'currentPointer':$index == a.currentTraceItem.pointer}" ng-if="!a.currentTraceItem.transition.play" ng-repeat="s in a.currentTraceItem.stack track by $index" >
+                 <span >{{s}}</span><span ng-if="item.stack.length == 0">&nbsp;</span>
+               </div>
+               <div class="tapePanelBlock" ng-class="{'currentPointer':$index == a.currentTraceItem.nextPointer}" ng-if="a.currentTraceItem.transition.play" ng-repeat="s in a.currentTraceItem.nextStack track by $index" >
+                 <span >{{s}}</span><span ng-if="item.nextStack.length == 0">&nbsp;</span>
+               </div>
+               <div class="tapePanelBlock noBorder">
+                 <span>...</span>
+               </div>
+             </div>
+             <div class="stackPanel" id="tapePanel" ng-if="(a.Type == 'DKA' || a.Type == 'NKA') && a.showSimulationPanel && a.currentTraceItem" style="bottom:initial">
+               <div class="stackPanelLabel" style="align-self:flex-start">
+                 <span translate="AUTOEDIT.STACK"></span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                 <i class="fa fa-fw" ng-class="{'fa-caret-down':self.stackPanelClosed,'fa-caret-up':!self.stackPanelClosed}" ng-click="self.stackPanelClosed = !self.stackPanelClosed" style="padding:0.3em;position:absolute;top:0;right:0;pointer-events:all;cursor:pointer"></i>
+               </div>
+               <div class="stackPanelBlock" ng-class="{'currentPointer':$index == 0}" ng-if="!self.stackPanelClosed && !a.currentTraceItem.transition.play" ng-repeat="s in a.currentTraceItem.stack track by $index" >
+                 <span >{{s}}</span><span ng-if="item.stack.length == 0">&nbsp;</span>
+               </div>
+               <div class="stackPanelBlock" ng-class="{'currentPointer':$index == 0}" ng-if="!self.stackPanelClosed && a.currentTraceItem.transition.play" ng-repeat="s in a.currentTraceItem.nextStack track by $index" >
+                 <span >{{s}}</span><span ng-if="item.nextStack.length == 0">&nbsp;</span>
+               </div>
+               <div class="stackPanelBlock" ng-if="!self.stackPanelClosed" style="border:0;background:transparent;height:1em">&nbsp;</div>
+             </div>             
+             <div class="stackPanel" id="tapePanel" ng-if="(a.Type == 'MEALY' || a.Type == 'MOORE') && a.showSimulationPanel && a.currentTraceItem" style="bottom:initial">
+               <div class="stackPanelLabel" style="align-self:flex-start">
+                 <span translate="AUTOEDIT.OUTPUT"></span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                 <i class="fa fa-fw" ng-class="{'fa-caret-down':self.stackPanelClosed,'fa-caret-up':!self.stackPanelClosed}" ng-click="self.stackPanelClosed = !self.stackPanelClosed" style="padding:0.3em;position:absolute;top:0;right:0;pointer-events:all;cursor:pointer"></i>
+               </div>
+               <div ng-if="!self.stackPanelClosed" class="stackPanelBlock" ng-class="{'currentPointer':$last}" ng-repeat="s in a.currentTraceItem.output track by $index" style="justify-content:flex-start;padding:4px">
+                 <span >{{s}}</span><span ng-if="item.output.length == 0">&nbsp;</span>
+               </div>
+               <div class="stackPanelBlock" ng-if="!self.stackPanelClosed" style="border:0;background:transparent;height:1em">&nbsp;</div>
+             </div>             
+             <div class="transitionGraphZoomButtons">
+               <a href="JavaScript:void(0)" ng-click="a.automatonGraphZoom = 25;"><div style="height:0.25em;width:1em;display:inline-block" ng-style="{'background-color':a.automatonGraphZoom == 25 ? '#ccc':'#fff'}"></div></a> 
+               <a href="JavaScript:void(0)" ng-click="a.automatonGraphZoom = 50;"><div style="height:0.5em;width:1em;display:inline-block" ng-style="{'background-color':a.automatonGraphZoom == 50 ? '#ccc':'#fff'}"></div></a> 
+               <a href="JavaScript:void(0)" ng-click="a.automatonGraphZoom = 75;"><div style="height:0.75em;width:1em;display:inline-block" ng-style="{'background-color':a.automatonGraphZoom == 75 ? '#ccc':'#fff'}"></div></a> 
+               <a href="JavaScript:void(0)" ng-click="a.automatonGraphZoom = 100;"><div style="height:1em;width:1em;display:inline-block" ng-style="{'background-color':a.automatonGraphZoom == 100 ? '#ccc':'#fff'}"></div></a> 
+               <a href="JavaScript:void(0)" ng-click="a.automatonGraphZoom = 125;"><div style="height:1.25em;width:1em;display:inline-block" ng-style="{'background-color':a.automatonGraphZoom == 125 ? '#ccc':'#fff'}"></div></a> 
+               <a href="JavaScript:void(0)" ng-click="a.automatonGraphZoom = 150;"><div style="height:1.5em;width:1em;display:inline-block" ng-style="{'background-color':a.automatonGraphZoom == 150 ? '#ccc':'#fff'}"></div></a> 
+             </div>
+             </div>
+         </div>
+
+         <!-- Edit popup Transition -->
+         <md-card ng-attr-id="transitionPopup{{a.ID}}" layout-padding style="position:absolute;display:block;background:white;z-index:20;overflow:auto" touchevents
+                  ng-if="a.isLabelChooseOpen" ng-mousedown="$event.stopPropagation()" ng-click="$event.stopPropagation(); a.selectedTransition.openLabelStackAlphabet = null"
+                  ng-style="{'left':a.getOpenLabelChooseX()+'px', 'top':a.getOpenLabelChooseY()+'px'}">
+
+           <div id="editLabelList" ng-if="a.Type == 'DEA' || a.Type == 'NEA' || a.Type == 'MOORE'" style="max-width:300px;max-height:350px;overflow:auto;display:block;">
+             <md-button ng-repeat="z in a.automaton.Alphabet track by $index" aria-label="character"
+                        class="labelButton md-raised" ng-class="{'md-primary':(a.selectedTransition.Labels.indexOf(z) != -1)}" 
+                        ng-click="a.toggleLabelChoose(a.selectedTransition,z)">{{z}}</md-button>
+             <md-button ng-if="a.Type == 'NEA'" aria-label="epsilon"
+                        class="labelButton md-raised" ng-class="{'md-primary':(a.selectedTransition.Labels.indexOf('') != -1)}" 
+                        ng-click="a.toggleLabelChoose(a.selectedTransition,'')">&epsilon;</md-button>
+             <div style="clear:both"></div>
+
+           </div>
+           <div ng-if="a.Type == 'DEA' || a.Type == 'NEA' || a.Type == 'MOORE'" class="popupButtons">
+             <div layout="row" ng-if="a.automaton.Alphabet.length > 3">
+               <md-button style="text-align:left;" flex class="md-primary" ng-click="a.toggleAllLabels(a.selectedTransition,1)" aria-label="all">
+                 <i class="fa fa-plus-square-o fa-fw"></i> <span translate="AUTOEDIT.SELECTALL"></span>
+               </md-button>
+               <md-button style="text-align:left;" flex class="md-primary" ng-click="a.toggleAllLabels(a.selectedTransition,0)" aria-label="none">
+                 <i class="fa fa-minus-square-o fa-trash-o fa-fw"></i> <span translate="AUTOEDIT.SELECTNONE"></span>
+               </md-button>
+             </div>
+             <div>
+               <md-button style="text-align:left;" flex class="md-primary" ng-click="a.removeTransition(a.selectedTransition)" aria-label="delete">
+                 <i class="fa fa-trash-o fa-fw"></i> <span translate="AUTOEDIT.DELETETRANSITION"></span> 
+               </md-button>
+             </div>
+           </div>
+
+           <div id="editLabelList" ng-if="a.Type == 'DKA' || a.Type == 'NKA'" layout="column" style="min-width: 370px;max-height:350px;overflow:auto;display:block">
+             <div ng-if="a.selectedTransition" layout="row" ng-repeat="la in a.selectedTransition.Labels track by $index">
+
+                   <md-card ng-click="$event.stopPropagation()" 
+                      style="width:200px;margin-left:0px;background:white;position:absolute;z-index:100;margin-top:-3px" 
+                      ng-show="a.selectedTransition.openLabelStackAlphabet == la">
+                     <div>   
+                       <md-button ng-repeat="z in a.automaton.StackAlphabet track by $index"
+                                  class="labelButton md-raised md-primary" aria-label="stack character"
+                                  ng-click="la[2].push(z);a.makeUndoStep();">{{z}}</md-button>
+                     </div>   
+                   </md-card>
+             
+               <md-input-container flex>
+                 <label><span translate="AUTOEDIT.TOPOFSTACK"></span></label>
+                 <md-select ng-model="la[0]" ng-change="a.checkAutomaton();a.makeUndoStep();">
+                   <md-option ng-repeat="z in a.automaton.StackAlphabet" value="{{z}}">
+                     <span ng-style="{'font-weight':$index == 0 ? 'bold':'normal'}">{{z}}</span>
+                   </md-option>
+                 </md-select>
+               </md-input-container>
+               <md-input-container flex>
+                 <label><span translate="AUTOEDIT.INPUTCHAR"></span></label>
+                 <md-select ng-model="la[1]" ng-change="a.checkAutomaton();a.makeUndoStep();">
+                   <md-option ng-repeat="z in a.automaton.Alphabet" value="{{z}}">{{z}}</md-option>
+                   <md-option value="">&epsilon;</md-option>
+                 </md-select>
+               </md-input-container>
+               <md-input-container flex>
+                 <label><span translate="AUTOEDIT.STACKWORD"></span></label>
+                 <input value=" " style="display:none"/>
+                 <div style="border-bottom: 1px solid rgba(0,0,0,0.12); position: absolute; top: 10px; width: 100%; margin-left: 2px;">
+                   <span ng-if="la[2].length == 0">&epsilon;</span>
+                   <span class="stackWordItem" style="cursor:pointer" ng-repeat="z in la[2] track by $index" 
+                         ng-click="la[2].splice($index,1);a.makeUndoStep();">{{z}}</span>
+                   <span style="cursor:pointer" class="primaryColor" aria-label="hinzufügen" 
+                         ng-click="a.selectedTransition.openLabelStackAlphabet = la;$event.stopPropagation()">
+                     <i class="fa fa-plus"></i></span>
+
+                 </div>
+               </md-input-container>
+               <md-button class="md-icon-button md-primary" ng-click="a.removeLabel(a.selectedTransition,la)" aria-label="delete">
+                 <i class="fa fa-trash-o"></i><md-tooltip><span translate="AUTOEDIT.DELETELABEL"></span></md-tooltip>
+               </md-button>
+             </div>
+           </div>
+
+           <div id="editLabelList" ng-if="a.Type == 'MEALY'" layout="column" style="min-width: 370px;max-height:350px;overflow:auto;display:block">
+             <div ng-if="a.selectedTransition" layout="row" ng-repeat="la in a.selectedTransition.Labels track by $index">
+               <md-input-container flex style="margin-bottom:0">
+                 <label><span translate="AUTOEDIT.INPUT"></span></label>
+                 <md-select ng-model="la[0]" ng-change="a.checkAutomaton();a.makeUndoStep();">
+                   <md-option ng-repeat="z in a.automaton.Alphabet" value="{{z}}">{{z}}</md-option>
+                 </md-select>
+               </md-input-container>
+
+               <md-input-container flex style="margin-bottom:0">
+                 <label><span translate="AUTOEDIT.OUTPUT"></span></label>
+                 <input ng-model="la[1]" ng-change="a.checkAutomaton();a.parseUserAlphabet(); a.makeUndoStep();" ng-model-options="{ debounce: 500 }"/>
+               </md-input-container>
+               <md-input-container style="position:relative;width:1em;overflow: hidden;margin: 0;align-items: center; justify-content: center; display: flex; flex-grow: 0; flex-shrink: 0;">
+                 <md-select style="opacity: 0;" ng-model="la[1]" ng-change="a.checkAutomaton();a.parseUserAlphabet(); a.makeUndoStep();">
+                   <md-option ng-repeat="z in a.automaton.StackAlphabet" value="{{z}}">{{z}}</md-option>
+                 </md-select>
+                 <div style="position: absolute;left:0; top:0;width:100%;height:100%;background:#fff;display: flex;justify-content: center;align-items: center;pointer-events: none;">
+                   <i class="fa fa-fw fa-caret-down"></i>
+                 </div>
+               </md-input-container>
+
+               <md-button class="md-icon-button md-primary" ng-click="a.removeLabel(a.selectedTransition,la)" aria-label="delete">
+                 <i class="fa fa-trash-o"></i><md-tooltip><span translate="AUTOEDIT.DELETELABEL"></span></md-tooltip>
+               </md-button>
+             </div>
+
+           </div>
+
+           <div id="editLabelList" ng-if="a.Type == 'TM'" layout="column" style="max-width: 350px;max-height:350px;overflow:auto;display:block">
+             <div ng-if="a.selectedTransition" layout="row" ng-repeat="la in a.selectedTransition.Labels track by $index">
+               <md-input-container flex>
+                 <label><span translate="AUTOEDIT.READ"></span></label>
+                 <md-select ng-model="la[0]" ng-change="a.checkAutomaton();a.makeUndoStep();">
+                   <md-option ng-repeat="z in a.automaton.StackAlphabet" value="{{z}}">{{z}}</md-option>
+                 </md-select>
+               </md-input-container>
+               <md-input-container flex>
+                 <label><span translate="AUTOEDIT.WRITE"></span></label>
+                 <md-select ng-model="la[1]" ng-change="a.checkAutomaton();a.makeUndoStep();">
+                   <md-option ng-repeat="z in a.automaton.StackAlphabet" value="{{z}}">{{z}}</md-option>
+                 </md-select>
+               </md-input-container>
+               <md-input-container flex>
+                 <label><span translate="AUTOEDIT.DIRECTION"></span></label>
+                 <md-select ng-model="la[2]" ng-change="a.makeUndoStep();">
+                   <md-option value="R"><span translate="AUTOEDIT.RIGHT"></span></md-option>
+                   <md-option value="L"><span translate="AUTOEDIT.LEFT"></span></md-option>
+                   <md-option value="N"><span translate="AUTOEDIT.NONE"></span></md-option>
+                 </md-select>
+               </md-input-container>
+               <md-button class="md-icon-button md-primary" ng-click="a.removeLabel(a.selectedTransition,la)" aria-label="delete">
+                 <i class="fa fa-trash-o"></i><md-tooltip><span translate="AUTOEDIT.DELETELABEL"></span></md-tooltip>
+               </md-button>
+             </div>
+           </div>
+     
+           <div ng-if="a.Type == 'MEALY' || a.Type == 'DKA' || a.Type == 'NKA' || a.Type == 'TM'" class="popupButtons">
+             <md-button class="md-primary" ng-click="a.addFirstLabel(a.selectedTransition)" aria-label="add">
+               <i class="fa fa-plus fa-fw"></i> <span translate="AUTOEDIT.ADDLABEL"></span>
+             </md-button>
+             <md-button style="text-align:left;" class="md-primary" ng-click="a.removeTransition(a.selectedTransition)" aria-label="delete">
+               <i class="fa fa-trash-o fa-fw"></i> <span translate="AUTOEDIT.DELETETRANSITION"></span> 
+             </md-button>
+           </div>
+
+         </md-card>
+
+         <!-- Edit popup State -->
+       
+         <md-card ng-attr-id="statePopup{{a.ID}}" layout-padding style="max-width:350px;position:absolute;background:white;z-index:20;" touchevents
+                  ng-if="a.isStateChooseOpen && a.selectedState && !a.transitionClickMode" 
+                  ng-mousedown="$event.stopPropagation()" ng-click="$event.stopPropagation()"
+                  ng-style="{'left':a.getOpenStateChooseX()+'px', 'top':a.getOpenStateChooseY()+'px'}">
+           <div layout="column">
+             <md-input-container flex style="padding-bottom:0;margin-bottom:0">
+               <label><span translate="AUTOEDIT.STATENAME"></span></label>
+               <input ng-model="a.selectedState.Name" ng-change="a.changeStateName(a.selectedState);a.makeUndoStep()" ng-model-options="{ debounce: 500 }"/>
+             </md-input-container>
+             <div layout="row" flex ng-if="a.Type == 'MOORE'" >
+               <md-input-container flex style="margin-bottom:0;margin-top:0">
+                 <label><span translate="AUTOEDIT.OUTPUT"></span> (λ: Q → ∆)</label>
+                 <input ng-model="a.selectedState.Output" ng-change="a.parseUserAlphabet(); a.makeUndoStep();" ng-model-options="{ debounce: 500 }"/>
+               </md-input-container>             
+               <md-input-container style="position:relative;width:1em;overflow: hidden;margin: 0;align-items: center; justify-content: center; display: flex; flex-grow: 0; flex-shrink: 0;">
+                 <md-select style="opacity: 0;" ng-model="a.selectedState.Output" ng-change="a.parseUserAlphabet(); a.makeUndoStep();">
+                   <md-option ng-repeat="z in a.automaton.StackAlphabet" value="{{z}}">{{z}}</md-option>
+                 </md-select>
+                 <div style="position: absolute;left:0; top:0;width:100%;height:60%;background:#fff;display: flex;justify-content: center;align-items: center;pointer-events: none;">
+                   <i class="fa fa-fw fa-caret-down"></i>
+                 </div>
+               </md-input-container>
+             </div>
+
+             <md-checkbox aria-label="final" ng-if="a.Type != 'MEALY' && a.Type != 'MOORE'" ng-model="a.selectedState.Final" ng-change="a.makeUndoStep();a.automaton.acceptCache = []"><span translate="AUTOEDIT.FINALSTATE"></span></md-checkbox>
+             <md-checkbox aria-label="start"  ng-model="a.selectedState.Start" ng-change="a.changeStartState(a.selectedState);a.makeUndoStep()"><span translate="AUTOEDIT.STARTSTATE"></span></md-checkbox>
+             <md-button style="text-align:left" class="md-primary" ng-click="a.removeState(a.selectedState)" aria-label="delete">
+               <i class="fa fa-trash-o fa-fw"></i> <span translate="AUTOEDIT.DELETESTATE"></span>
+             </md-button>
+           </div>
+         </md-card>
+
+         <div ng-show="a.showSimulationPanel" style="position:absolute;z-index:5;bottom:0px; height:30%;left:320px;right:0px;background:white; border-left: 1px solid #ccc;overflow:hidden" ng-style="{'left':a.selectedTab == -1 ?'0px':'320px'}">
+           <div layout-padding style="padding-bottom:0px">
+             <b><span translate="AUTOEDIT.CONFIGLISTFOR"></span> 
+               <span class="stackWordItem" ng-repeat="z in a.simulationRunInput track by $index">{{z}}</span>
+               <span ng-if="a.simulationRunInput.length == 0">&epsilon;</span>
+             </b><br>
+             <div ng-attr-id="{{'simulationTrace'+a.ID}}" style="border-top:1px solid #eee; margin-top:5px;overflow:auto; white-space:nowrap;box-sizing:border-box;  position: absolute; top: 30px; bottom: 0px; left: 8px; right: 0px;">
+               <div ng-repeat="trace in a.simulationTrace track by $index" style="position:relative;padding-bottom:5px;margin-bottom:5px;border-bottom:2px solid #eee" ng-attr-id="{{'simulationTrace'+a.ID+'_'+$index}}"> 
+                 <div style="float:left;width:50px;">
+                   <span style="font-weight:bold;display:inline-block;padding:4px;width:50px;border:1px solid #ccc;font-size: 80%;box-sizing:border-box" 
+                         ng-class="{'traceCorrect':trace.accept, 'traceNotCorrect':!trace.accept}">K{{$index+1}}</span><br>
+                   <md-button class="md-raised md-primary" style="min-width:2em; width: 2em; margin:0px; margin-top:7px" aria-label="play" 
+                              ng-click="a.animateSimulation($index)"><i class="fa fa-play"></i></md-button>
+                 </div>
+                 <div ng-repeat="item in trace.items track by $index" style="vertical-align:top;display:inline-block;min-width:50px;text-align: center;cursor:pointer" ng-attr-id="{{'simulationTrace'+a.ID+'_'+$parent.$index+'_'+$index}}" ng-click="a.animateSimulation($parent.$index,$index)"> 
+                   <div style="color:#666;font-size:80%;padding:4px;border:1px solid #ccc;box-sizing:border-box;font-weight:bold" 
+                        ng-class="{'traceCorrect':trace.accept, 'traceNotCorrect':!trace.accept}" >{{$index}}</div>
+              
+                   <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" style="margin:auto">
+                     <circle class="state" cx="25" cy="25" r="20" ng-class="{'play':trace.animate && trace.animateStep == $index}"/>
+                     <circle class="stateInnerCircle" ng-if="item.state.Final" cx="25" cy="25" r="17"/>
+                     <text ng-if="::a.Type != 'MOORE'" class="stateName" x="25" y="25">{{self.limitTextLength(item.state.Name,5)}}</text>
+                     <text ng-if="::a.Type == 'MOORE'" style="font-size:80%" class="stateName" x="25" y="15">{{self.limitTextLength(item.state.Name,5)}}</text>
+                     <text ng-if="::a.Type == 'MOORE'" style="font-size:80%"  class="stateName" x="25" y="35">{{self.limitTextLength(item.state.Output,5)}}</text>
+                     <line ng-if="::a.Type == 'MOORE'" class="transitionLine" x1="10" x2="40" y1="25" y2="25"/>
+                   </svg>
+
+                   <div ng-if="item.stack" style="padding-left:2px;padding-right:2px;background:#eee;border:1px solid #ccc">
+                     <span ng-if="a.Type == 'TM'">...</span>
+                     <span ng-repeat="s in item.stack track by $index" ng-style="{'font-weight':$index == item.pointer ? 'bold':'', 'color':$index === item.lastPointer ? 'green':''}">{{s}}</span><span ng-if="item.stack.length == 0">&nbsp;</span>
+                     <span ng-if="a.Type == 'TM'">...</span>
+                   </div>
+                   <div ng-if="item.input" style="padding-left:2px;padding-right:2px;background:#eee;border:1px solid #ccc">
+                     <span ng-repeat="s in item.input track by $index">{{s}}</span><span ng-if="item.input.length == 0">&nbsp;</span>
+                   </div>
+                   <!-- Mealy output -->
+                   <div ng-if="item.output" style="padding-left:2px;padding-right:2px;background:#ffe;border:1px solid #ccc;text-align:left;">
+                     <div style="padding-left:2px;padding-right:2px;border-top:1px solid #ccc" ng-repeat="s in item.output track by $index">{{s}}</div>
+                   </div>
+
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+
+         <!-- Simulation / Transformieren -->
+         <div ng-show="a.showSimulationPanel" style="z-index: 2;position:absolute;top:48px;right:0px;bottom:30%;width:320px;background:white;">
+
+           <!-- Simulation -->
+           <div  style="position:absolute;top:0px;left:0px;right:0px;bottom:0px;overflow:auto" class="md-whiteframe-z2">
+             <div layout-padding layout-margin>
+
+               <div style="position:relative">
+
+                 <md-button ng-if="a.Type != 'MEALY' && a.Type != 'MOORE'" style="text-transform: initial;margin:0px;min-width:2.5em;width:2.5em;margin-top:-0.5em;float:right" ng-click="a.randomSimulationInputWord();a.simulationRunning = false; a.makeUndoStep(); $event.stopPropagation()" aria-label="random">
+                   <i style="font-size:100%" class="fa fa-magic fa-fw"></i> <md-tooltip><span translate="AUTOEDIT.RANDOMINPUTWORD"></span></md-tooltip>
+                 </md-button>
+                 
+                 <span style="font-size:75%;rgba(0,0,0,0.54);" translate="AUTOEDIT.INPUTWORD"></span><br>
+                 
+                 <input value=" " style="display:none"/>
+                 <div style="border-bottom: 1px solid rgba(0,0,0,0.12);margin-top:10px;margin-bottom:5px; width: 100%; margin-left: 2px;">
+                   <div class="stackWordItem" style="cursor:pointer" 
+                        ng-repeat="z in a.automaton.simulationInput track by $index" 
+                        ng-click="a.automaton.simulationInput.splice($index,1); a.simulationRunning = false; a.makeUndoStep(); $event.stopPropagation()">{{z}}</div>
+                   <span style="cursor:pointer" class="primaryColor" ng-show="!a.isSimulationInputKeyboardOpen" aria-label="add" 
+                         ng-click="a.isSimulationInputKeyboardOpen = true; $event.stopPropagation()">
+                     <i class="fa fa-plus"></i>
+                   </span>
+                   <span ng-show="a.isSimulationInputKeyboardOpen" style="cursor:pointer" class="primaryColor" aria-label="delete" 
+                         ng-click="a.automaton.simulationInput = []; a.simulationRunning = false; $event.stopPropagation()">
+                     <i class="fa fa-trash-o"></i>
+                   </span>
+                 </div>
+               </div>
+
+               <md-card ng-click="$event.stopPropagation()" 
+                        style="width:290px;margin-left:0px;background:white;position:absolute;z-index:100;margin-top:-3px;max-height:220px;overflow:auto" 
+                        ng-show="a.isSimulationInputKeyboardOpen">
+                 <div>   
+                   <md-button ng-repeat="z in a.automaton.Alphabet track by $index"
+                              class="labelButton md-raised md-primary" aria-label="character"
+                              ng-click="a.automaton.simulationInput = !a.automaton.simulationInput ? [] : a.automaton.simulationInput;a.automaton.simulationInput.push(z); a.simulationRunning = false; a.makeUndoStep()">{{z}}</md-button>
+                 </div>   
+               </md-card>
+
+               <div style="margin-top: 10px; margin-bottom: 10px;" layout="row">
+                 <md-button ng-if="!a.simulationRunning && !a.simulationPaused" layout-fill style="text-transform: initial;margin:0px" class="md-raised md-primary" ng-click="a.runSimulation()" aria-label="play">
+                   <i class="fa fa-play fa-fw"></i> <span translate="AUTOEDIT.STARTSIMULATION"></span>
+                 </md-button>
+                 
+                 <md-button ng-if="a.simulationRunning" layout-fill style="text-transform: initial;margin:0px" class="md-raised md-primary" ng-click="a.pauseSimulation();" aria-label="pause">
+                   <i class="fa fa-pause fa-fw"></i> <span translate="AUTOEDIT.PAUSESIMULATION"></span>
+                 </md-button>
+                 
+                 <md-button ng-if="!a.simulationRunning && a.simulationPaused" style="width:100%;text-transform: initial;margin:0px" class="md-raised md-primary" ng-click="a.continueSimulation()" aria-label="continue">
+                   <i class="fa fa-play fa-fw"></i> <span translate="AUTOEDIT.CONTINUESIMULATION"></span>
+                 </md-button>
+                 <md-button ng-if="!a.simulationRunning && a.simulationPaused" layout-fill style="text-transform: initial;margin:0px;min-width:2em;width:4em;margin-left:1em" class="md-raised md-primary" ng-click="a.runSimulation()" aria-label="reset">
+                   <i class="fa fa-undo fa-fw"></i> <md-tooltip><span translate="AUTOEDIT.RESTARTSIMULATION"></span></md-tooltip>
+                 </md-button>
+
+               </div>
+
+               <div>
+                 <span style="font-size:75%;rgba(0,0,0,0.54);float:right" translate="AUTOEDIT.FAST"></span>
+                 <span style="font-size:75%;rgba(0,0,0,0.54);float:left" translate="AUTOEDIT.SLOW"></span>
+                 <md-slider style="clear:both;" flex ng-model="a.simulationSpeed" min="0" max="1990" aria-label="Speed" class="md-primary"></md-slider>
+               </div>
+               
+               <div ng-if="a.automaton.lastInputs" layout="column" style="position: relative;">
+                 <div style="opacity: 0.4;position:absolute;left:-8px;top:5px;height:19px;display: flex; justify-content: center;align-items: center; cursor: help;" ng-click="$event.stopPropagation(); a.checkAcceptAll()"> 
+                  <i class="fa fa-fw fa-question" style="margin-top: 3px;font-size: 80%; color:#999"></i>
+                 </div>
+
+                 <div style="font-size:75%;rgba(0,0,0,0.54);margin-bottom:0.5em" translate="AUTOEDIT.LASTINPUTS"></div>
+                 <div class="stackWordItem" ng-repeat="input in a.automaton.lastInputs" ng-init="ip = input.join('°')" style="display:block;cursor:pointer;position:relative;" ng-click="a.automaton.simulationInput = input.slice(0); a.simulationRunning = false; a.makeUndoStep(); $event.stopPropagation()">
+                   <div style="opacity: 0.4;position:absolute;left:-1em;top:0;height:19px;display: flex; justify-content: center;align-items: center; cursor: help;" ng-click="$event.stopPropagation(); a.checkAccept(input)"> 
+                     <i class="fa fa-fw fa-question" style="margin-top: 3px;font-size: 80%; color:#999" ng-if="!a.automaton.acceptCache[ip]"></i>
+                     <i class="fa fa-fw fa-check" style="margin-top: 3px;font-size: 80%; color:green" ng-if="a.automaton.acceptCache[ip] == 1"></i>
+                     <i class="fa fa-fw fa-times" style="margin-top: 3px;font-size: 80%; color:red" ng-if="a.automaton.acceptCache[ip] == -1"></i>
+                   </div>
+                   <div class="stackWordItem" ng-repeat="z in input track by $index">{{z}}</div>
+                   <md-button style="position:absolute;right:0;width: 19px;min-height: 1em;height: 19px; min-width:1em;top:0;display:flex;margin:0;padding:0;" class="md-primary" ng-click="a.automaton.lastInputs.splice($index,1)" aria-label="delete">
+                     <i class="fa fa-trash-o fa-fw" style="font-size: 100%;"></i>
+                   </md-button>
+                 </div>
+               </div>
+             </div>
+           </div>           
+
+          </div>
+        </md-content>
+  </div>
+</div>
+
+<script type="text/ng-template" id="selectOtherAutomaton.html">
+<md-dialog>
+  <style>
+  .md-dialog-container {
+    z-index: 80;
+  }
+  md-backdrop.md-dialog-backdrop {
+    z-index: 79;
+  }
+  </style>
+  <md-toolbar layout="row" layout-align="space-between center" style="min-height:56px">
+    <span flex style="margin-left:16px;margin-right:16px;position:relative" translate="AUTOEDIT.SELECTAUTOMATON">
+    </span> 
+    <md-button style="margin-top:-5px" class="md-icon-button" aria-label="close" ng-click="close()"><i class="fa fa-fw fa-times"></i></md-button>
+  </md-toolbar>
+  <md-content style="padding:16px;overflow:auto"> 
+    <div layout="column">
+      <md-input-container>
+        <label translate="AUTOEDIT.AUTOMATON"></label>
+        <md-select ng-model="selectedAutomaton">
+          <md-option ng-repeat="a in automata" value="{{a.ID}}">
+            {{a.Name}}
+          </md-option>
+        </md-select>
+      </md-input-container>
+      <md-switch ng-model="withSameAlphabet" ng-change="refreshList()"><span translate="AUTOEDIT.SAMEALPHABET"></span></md-switch>
+      <md-button ng-disabled="!selectedAutomaton" ng-click="select(selectedAutomaton)" aria-label="select" style="margin:0">
+        <span translate="AUTOEDIT.SELECTAUTOMATON"></span>
+      </md-button>  
+    </div>
+  </md-content>
+</md-dialog>
+</script>
+
+<script type="text/ng-template" id="editDeltaTable.html">
+<md-dialog style="max-height:100%;max-width:100%">
+  <style>
+  .md-dialog-container {
+    z-index: 80;
+  }
+  md-backdrop.md-dialog-backdrop {
+    z-index: 79;
+  }
+  </style>
+  <md-toolbar layout="row" layout-align="space-between center" style="min-height:56px">
+    <span flex style="margin-left:16px;margin-right:16px;position:relative" translate="AUTOEDIT.DELTATABLE">
+    </span> 
+    <md-button style="min-width:1em" ng-click="copyToClipboard()" aria-label="Copy to Clipboard"><i class="fa fa-fw fa-copy"></i><md-tooltip><span translate="AUTOEDIT.COPYTRANSITIONTABLE"></span></md-tooltip></md-button>
+    <md-button style="margin-top:-5px" class="md-icon-button" aria-label="close" ng-click="close()"><i class="fa fa-fw fa-times"></i></md-button>
+  </md-toolbar>
+  <table id="copyTable{{self.ID}}" cellspacing="0" cellpadding="8" style="position:absolute;left:-1000%;top:100%;user-select:all"></table>
+  <md-content style="padding:16px;overflow:auto"> 
+
+    <div style="display:table">
+      <div style="display:table-row;font-weight:bold">
+        <div style="display:table-cell;padding:8px;text-align:center;border-right:1px solid black;border-bottom:1px solid black">δ</div>
+        <div style="display:table-cell;padding:8px;text-align:center;border-bottom:1px solid black" 
+             ng-if="self.Type == 'NEA'">&epsilon;</div>
+        <div style="display:table-cell;padding:8px;text-align:center;border-bottom:1px solid black" 
+             ng-repeat="z in self.automaton.Alphabet track by $index">{{z}}</div>
+      </div>
+      <div style="display:table-row;" ng-repeat="s in self.automaton.States | orderBy:'Name' track by $index">
+        <div style="display:table-cell;padding:8px;text-align:center;font-weight:bold;border-right:1px solid black">{{s.Name}}</div>
+        
+        <div style="display:table-cell;padding:0px;text-align:center;border-right:1px solid #ddd;border-bottom:1px solid #ddd" ng-if="self.Type == 'NEA'">
+          <md-menu>
+            <md-button ng-click="$mdOpenMenu($event)" class="md-no-style" style="min-width: 2em;  min-height: 2em;vertical-align:middle;margin:0.2em;text-align:center;text-transform:none;line-height:1em;font-size:1em" aria-label="menu">
+              {{getSet(mapped[s.ID][''])}}
+            </md-button>
+            <md-menu-content>
+              <md-menu-item ng-repeat="ts in self.automaton.States | orderBy:'Name' track by $index">
+                <md-button ng-click="addLabel(s,'',ts)" aria-label="select" style="text-transform:none">
+                  <i class="fa fa-fw" ng-class="{'fa-check':mapped[s.ID][''].indexOf(ts) != -1}"></i> {{ts.Name}}
+                </md-button>
+              </md-menu-item>  
+            </md-menu-content>
+          </md-menu>              
+        </div>
+
+        <div style="display:table-cell;padding:0px;text-align:center;border-right:1px solid #ddd;border-bottom:1px solid #ddd" ng-repeat="z in self.automaton.Alphabet track by $index">
+          <md-menu>
+            <md-button ng-click="$mdOpenMenu($event)" class="md-no-style" style="min-width: 2em;  min-height: 2em;vertical-align:middle;margin:0.2em;text-align:center;text-transform:none;line-height:1em;font-size:1em" aria-label="menu">
+              {{getSet(mapped[s.ID][z])}}
+            </md-button>
+            <md-menu-content>
+              <md-menu-item ng-repeat="ts in self.automaton.States | orderBy:'Name' track by $index">
+                <md-button ng-click="addLabel(s,z,ts)" aria-label="select" style="text-transform:none">
+                  <i class="fa fa-fw" ng-class="{'fa-check':mapped[s.ID][z].indexOf(ts) != -1}"></i> {{ts.Name}}
+                </md-button>
+              </md-menu-item>  
+            </md-menu-content>
+          </md-menu>    
+        </div>
+      </div>
+      <div style="display:table-row;font-weight:bold">
+        <div style="display:table-cell;text-align:center;font-weight:bold"><md-button ng-click="addState()" aria-label="add" style="min-width:2em;margin:0"><i class="fa fa-fw fa-plus-circle"></i>
+          <md-tooltip direction="top"><span translate="AUTOEDIT.CREATENEWSTATE"></span></md-tooltip>
+        </md-button></div>
+      </div>
+    </div>
+  </md-content>
+</md-dialog>
+</script>

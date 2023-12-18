@@ -1,0 +1,242 @@
+<md-dialog style="padding:20px;width:100%;height:100%;max-width:calc(98% - 40px);max-height:calc(98% - 40px)">
+      <div style="position:absolute; top:0px;left:0px;right:0px;bottom:0px; overflow:auto">
+        <md-content layout="row" layout-fill style="position: absolute; box-sizing: border-box;">
+
+          <div  layout-fill style="max-width:320px;position:relative;z-index: 2" class="md-whiteframe-z2">
+            <md-toolbar layout="row" layout-align="center center" class="md-primary" style="min-height:48px">
+
+              <span style="padding:10px;font-size:75%;font-weight:500;white-space: nowrap;" >Scanner:</span>
+              <md-button title="Token hinzufügen" aria-label="Token hinzufügen" style="margin:0px;text-transform:none" 
+                ng-click="c.addToken()">
+                <i class="fa fa-plus"></i> <span translate="TDIAG.ADDTOKEN"></span>
+              </md-button>
+
+              <span flex></span>
+
+              <md-button title="Scanner anwenden" aria-label="Scanner anwenden" style="min-width:3em;margin:0px;text-transform:none" ng-show="!c.showScannerTest" ng-click="c.showParseTable = false; c.showCompilerTest = false; c.showScannerTest = !c.showScannerTest">
+                <i class="fa fa-caret-square-o-right"></i> <span hide-sm hide-md translate="TDIAG.TESTSCANNER"></span>
+              </md-button>
+            </md-toolbar>
+
+            <!-- Tokenlist -->
+            <div id="tokenlist_{{c.ID}}" class="scannerTokens" as-sortable="c.tokenListSortOptions" ng-model="c.grammar.lex.rules">
+              <div id="tokenlist_{{c.ID}}_{{$index}}" class="scannerToken" ng-repeat="t in c.grammar.lex.rules" as-sortable-item ng-click="c.selectToken(t);$event.stopPropagation()" ng-class ="{selected : c.selectedToken == t}">
+                <md-button ng-show="c.selectedToken == t" aria-label="ausgewähltes Element löschen" style="min-width:3em;width:3em;margin:0px;position:absolute;right:2px;top:2px;" ng-click="c.deleteToken(c.selectedToken)"><i class="fa fa-trash-o"></i></md-button>
+
+                <div as-sortable-item-handle style="padding:10px">
+                  <div class="scannerTokenName"> <input ng-if="t.name != 'IGNORE'" ng-change="c.updateTokenNamesInBNF(t.name,'{{t.name}}')" ng-model="t.name" no-drag ng-model-options="{ debounce: 500 }"/> <span ng-if="t.name == 'IGNORE'">{{t.name}}</span> </div>
+                  <div class="scannerTokenExpression">
+                    <input ng-model="t.expression" ng-model-options="{ debounce: 500 }" ng-change="c.makeUndoStep()" no-drag/> 
+                    <div ng-if="t.name == 'IGNORE'" style="font-size:70%;font-style:italic">Hinweis: diese Zeichen werden in der Eingabe ignoriert.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="clear:both"></div>
+          </div>
+
+          <div ng-if="c.showScannerTest" flex layout-fill style="position:relative;z-index:2;margin-left:-10px;max-width:320px" class="md-whiteframe-z2">
+            <md-toolbar layout="row" layout-align="center center" class="md-primary" style="position:absolute;width:100%;min-height:48px">
+              <span style="padding:10px;font-size:75%;font-weight:500" translate="TDIAG.TESTSCANNER"></span>
+              <span flex></span>
+              <md-button class="md-icon-button" aria-label="close" ng-click="c.showScannerTest = !c.showScannerTest">
+                <i class="fa fa-times fa-fw"></i>
+              </md-button>
+            </md-toolbar>
+            <md-content layout-fill layout="column">
+              <div style="margin-top:58px;margin-left:20px;margin-right:20px;" translate="TDIAG.INPUT"></div>
+              <div style="margin-left:20px;margin-right:20px;position:relative;height:200px;box-sizing: border-box;border:1px solid #999;margin-top:4px">
+                <div ui-codemirror="{lineNumbers: true,theme:'default', mode:null}" ng-model="c.runParserInput" ui-refresh="c.runParserInput"></div>
+              </div>
+              <div layout="row" layout-align="center center" style="margin-top:16px">
+                <md-button style="margin-left:0px" class="md-primary md-raised" ng-click="c.runScanner()">
+                  <i class="fa fa-play fa-fw"></i> <span translate="TDIAG.SCAN"></span>
+                </md-button> 
+              </div>
+
+              <div style="margin-left:20px;margin-right:20px;" translate="TDIAG.OUTPUT"></div>
+              <div style="margin-left:20px;margin-right:20px;position:relative;height:150px;margin-bottom:5px;box-sizing: border-box;border:1px solid #999;margin-top:4px">
+                 <div ui-codemirror="{lineNumbers: true,lineWrapping:true, theme:'default', mode:null}" ng-model="c.runParserTokenlist" readonly ui-refresh="c.runParserTokenlist"></div>
+              </div>
+            </md-content>
+          </div> 
+
+          <div flex layout-fill style="position:relative;overflow: auto;">
+            <md-toolbar class="md-hue-2" layout="row" layout-align="center center" style="min-height:48px">
+              <span style="padding:10px;font-size:75%;font-weight:500">Parser:</span>
+              <md-button aria-label="Regel hinzufügen" style="min-width:3em;margin:0px;text-transform:none" 
+                ng-click="c.addRule()">
+                <i class="fa fa-plus"></i> <span translate="TDIAG.ADDRULE"></span>
+              </md-button>
+              <md-button ng-show="c.buildParserOutput != ''" aria-label="Hint" style="min-width:3em;width:3em;margin:0px;" 
+                         ng-click="c.showBuildHints = !c.showBuildHints">
+                <i class="fa fa-exclamation-triangle"></i>
+              </md-button>
+
+              <span flex></span>
+
+              <md-button aria-label="undo" ng-click="c.undo()" ng-disabled="c.historyPointer == 0" style="min-width: 1em;">
+                <i class="fa fa-undo"></i>
+                <md-tooltip direction="top"><span translate="UNDO"></span></md-tooltip>
+              </md-button>
+              <md-button aria-label="redo" ng-click="c.redo()" ng-disabled="c.historyPointer >= c.history.length-1" style="min-width: 1em;">
+                <i class="fa fa-undo fa-flip-horizontal"></i>
+                <md-tooltip direction="top"><span translate="REDO"></span></md-tooltip>
+              </md-button>
+
+              <span flex></span>
+
+              <md-button ng-disabled="c.parseTable == ''" ng-show="!c.showParseTable" aria-label="Parser table" style="min-width:3em;margin:0px;text-transform:none" ng-click="c.showScannerTest = false; c.showCompilerTest = false; c.showParseTable = !c.showParseTable">
+                <i class="fa fa-table"></i> <span hide-sm hide-md translate="TDIAG.PARSERTABLE"></span>
+              </md-button>
+              <md-button aria-label="Compiler testen" style="min-width:3em;margin:0px;text-transform:none" 
+                ng-show="!c.showCompilerTest" ng-click="c.showScannerTest = false; c.showParseTable = false; c.showCompilerTest = !c.showCompilerTest">
+                <i class="fa fa-caret-square-o-right"></i> <span hide-sm hide-md translate="TDIAG.TESTCOMPILER"></span>
+              </md-button>
+
+              <md-button ng-show="!c.showCompilerTest && !c.showParseTable" aria-label="close" class="md-icon-button" ng-click="cancel()"><i class="fa fa-times fa-fw"></i></md-button>
+            </md-toolbar>
+
+            <div class="parserRules" id="parserlist_{{c.ID}}" style="bottom:{{c.sAttributePanelSize*25+25}}%">
+              <div class="parserRuleElements" as-sortable="c.sameListSortOptions" ng-model="c.grammar.bnf"  ng-click="c.deselectAll(); c.addElementOpen = false;">
+                <div class="parserRule" id="parserlist_{{c.ID}}_{{$index}}" ng-repeat="(rIndex, rule) in c.grammar.bnf" as-sortable-item >
+                  <div class="parserRuleInner" ng-click="c.selectRule(rule);$event.stopPropagation()" ng-class="{selected : c.selectedRule == rule}">
+                    <div as-sortable-item-handle style="position:absolute;top:0px;width:100%;height:10px"></div>
+                    <div class="parserRuleName"><input ng-change="c.updateRuleNamesInBNF(rule.name,'{{rule.name}}')" ng-model-options="{ debounce: 500 }" ng-model="rule.name" no-drag /></div>
+                    <md-button ng-show="c.selectedRule == rule" aria-label="ausgewähltes Element löschen" style="min-width:3em;width:3em;margin:0px;position:absolute;right:2px;top:2px;" ng-click="c.deleteParserRule()"><i class="fa fa-trash-o"></i></md-button>
+
+                    <div class="parserRuleRightHandSides" as-sortable="c.sameListSortOptions" ng-model="rule.rhs">
+
+                      <div class="parserRuleRightHandSide" ng-class="{'first':$first}" ng-repeat="(rhsIndex, rhs) in rule.rhs" as-sortable-item >
+                        <md-button ng-show="c.selectedRHS == rhs" aria-label="ausgewähltes Element löschen" style="min-width:2em;width:2em;margin:0px;position:absolute;right:-22px;top:-8px;font-size:70%" ng-click="c.deleteParserRHS()"><i class="fa fa-trash-o"></i></md-button>
+
+                        <div class="parserRuleStartArrow" ng-if="$first"></div>
+                        <div class="parserRuleStartLineArrow" ng-if="!$first"><div></div></div>
+
+                        <div class="parserRuleRightHandSideInner" id="parserlist_{{c.ID}}_{{rIndex}}_{{$index}}" ng-click="c.selectRHS(rhs,rule);$event.stopPropagation()" ng-class="{selected : c.selectedRHS == rhs}">
+                          <div as-sortable-item-handle class="moveHandle"></div>
+                          <div class="parserRuleRightHandSideElements" ng-class="{'empty':rhs[0].length == 0}" as-sortable="c.sameListSortOptions" ng-model="rhs[0]">
+                            <div class="parserRuleRightHandSideStartArrow"></div>
+
+                            <div class="parserRuleRightHandSideElement" ng-click="c.selectRHSElement(e,rhs,rule);$event.stopPropagation()" style="position:relative" ng-repeat="(eIndex,e) in rhs[0]" as-sortable-item ng-class="{'last':$last, selected : c.selectedRHSElement == e}" >
+                              <md-button ng-show="c.selectedRHSElement == e" aria-label="ausgewähltes Element löschen" style="min-width:2em;width:2em;margin:0px;position:absolute;right:-1px;top:-6px;font-size:50%;z-index:2;padding:2px" ng-click="c.deleteParserRHSElement()"><i class="fa fa-trash-o"></i></md-button>
+
+                              <div ng-if="e.type == 't'" class="parserRuleTerminalElement" as-sortable-item-handle> 
+                                {{e.name}} 
+                                <div class="parserRuleElementArrow"></div>
+                              </div>
+                              <div ng-if="e.type == 'nt'" class="parserRuleNoneTerminalElement" as-sortable-item-handle> 
+                                {{e.name}} 
+                                <div class="parserRuleElementArrow"></div>
+                              </div>
+                            </div>
+                            <div ng-if="rhs[0].length == 0" style="position: absolute;left: 36px;display:none">&epsilon;</div>
+
+                            <div ng-if="c.selectedRHS == rhs" class="addBubbleElement">
+                              <md-button class="md-primary md-hue-1" ng-click="c.addElementOpen = true; c.setAddPanelPosition($event); $event.stopPropagation()">
+                                <i class="fa fa-fw fa-plus"></i>
+                              </md-button>
+                            </div>
+ 
+                            <div class="parserRuleRightHandSideEndArrowLine"><div></div></div>
+                          </div>
+                        </div>
+    
+                        <div class="parserRuleRightHandSideEndArrow" ng-if="$first"></div>
+                        <div class="parserRuleRightHandSideEndLineArrow" ng-if="!$first"></div>
+                      </div>
+                    </div>
+
+                    <div ng-if="c.selectedRule == rule" class="addBubble">
+                      <md-button ng-click="c.addRuleRHS(rule);$event.stopPropagation()" class="md-primary md-hue-1"><i class="fa fa-fw fa-plus"></i> <span translate="TDIAG.ADDRHS"></span></md-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="height:100px"></div>
+              <!-- <md-button ng-click="c.addRule()"><i class="fa fa-fw fa-plus"></i> Regel hinzufügen</md-button>-->
+            </div>
+
+            <div class="parserSAttributes" style="height:{{c.sAttributePanelSize*25+25}}%">
+              <md-toolbar class="md-primary md-hue-2" layout="row" style="min-height:40px">
+                <span style="padding:10px;font-size:75%;font-weight:500;white-space:nowrap" flex>{{c.getSelectedRHSText()}}</span><span flex></span> 
+                <md-button ng-if="c.sAttributePanelSize > 0" class="toolbarButton"  ng-click="c.changeAttributePanelSize(-1)"><i class="fa fa-fw fa-caret-square-o-down"></i></md-button>
+                <md-button ng-if="c.sAttributePanelSize < 2" class="toolbarButton" ng-click="c.changeAttributePanelSize(1)"><i class="fa fa-fw fa-caret-square-o-up"></i></md-button>
+              </md-toolbar>
+              <div class="codeMirrorPanel">
+                <div ng-if="c.selectedRHS" ng-change="c.delayMakeUndoStep()" ui-codemirror="{lineNumbers: true,theme:'default', lineWrapping : true, mode: 'javascript', placeholder:c.currentSAttributePlaceholder}" ng-model="c.selectedRHS[1]" ui-refresh="c.sAttributePanelSize"></div>
+                <div ng-if="!c.selectedRHS" ng-change="c.delayMakeUndoStep()" ui-codemirror="{lineNumbers: true,theme:'default', lineWrapping : true, mode: 'javascript'}" ng-model="c.grammar.globalCode" ui-refresh="c.sAttributePanelSize"></div>
+              </div>
+            </div>
+          </div>
+
+          <div ng-if="c.addElementOpen" id="parserlistAddPanel_{{c.ID}}" class="addBubbleSelectPanel" ng-click="$event.stopPropagation()" 
+               ng-style="{'left':c.getOpenAddPanelX()+'px', 'top':c.getOpenAddPanelY()+'px'}" draggable>
+            <div style="color:rgba(0,0,0,0.54);font-size:70%;display:block;margin-bottom:4px;text-transform:uppercase" >
+              <span translate="TDIAG.ADDELEMENTRHS"></span> 
+              <div style="position:absolute;right:4px;top:4px;cursor:pointer" ng-click="c.addElementOpen = false; $event.stopPropagation()"><i class="fa fa-times"></i></div>
+            </div>
+            <div ng-repeat="t in c.grammar.lex.rules">
+              <div ng-if="t.name != 'IGNORE'" style="margin:5px;" class="parserRuleTerminalElement" ng-click="c.addRuleRHSElement(c.selectedRHS,t.name,'t')"> {{t.name}} </div>
+            </div>
+            <div class="parserRuleTerminalElement" style="margin:5px;color:gray" ng-click="c.addRuleRHSElement(c.selectedRHS,'EOF','t')">EOF</div>
+
+            <div ng-repeat="r in c.grammar.bnf">
+              <div class="parserRuleNoneTerminalElement" style="margin:5px;" ng-click="c.addRuleRHSElement(c.selectedRHS,r.name,'nt')"> 
+                {{r.name}} 
+              </div>
+            </div>
+
+            <br>
+
+            <md-button style="text-transform:none" ng-click="c.addRuleRHSElement(c.selectedRHS,c.addToken(),'t')" class="md-primary md-hue-1"><i class="fa fa-fw fa-plus"></i> <span translate="TDIAG.ADDTOKEN"></span></md-button>
+
+            <md-button style="text-transform:none" ng-click="c.addRuleRHSElement(c.selectedRHS,c.addRule(),'nt')" class="md-primary md-hue-1"><i class="fa fa-fw fa-plus"></i> <span translate="TDIAG.ADDRULE"></span></md-button>
+          </div>
+
+          <div ng-if="c.showCompilerTest" layout-fill flex="50" style="position:relative;z-index: 1;max-width:320px" class="md-whiteframe-z2">
+            <md-toolbar layout="row" layout-align="center center" class="md-primary" style="position:absolute;width:100%;min-height:48px">
+              <span style="padding:10px;font-size:75%;font-weight:500" translate="TDIAG.TESTCOMPILER"></span>
+              <span flex></span>
+              <md-button class="md-icon-button" aria-label="close" ng-click="c.showCompilerTest = !c.showCompilerTest">
+                <i class="fa fa-times fa-fw"></i>
+              </md-button>
+            </md-toolbar>
+            <md-content layout-fill layout="column">
+              <div style="margin-top:58px;margin-left:20px;margin-right:20px;" translate="TDIAG.INPUT"></div>
+              <div style="margin-left:20px;margin-right:20px;position:relative;height:150px;box-sizing: border-box;border:1px solid #999;margin-top:4px">
+                <div ui-codemirror="{lineNumbers: true,theme:'default', mode:null}" ng-model="c.runParserInput" ui-refresh="c.runParserInput"></div>
+              </div>
+              <div layout="row" layout-align="center center" style="margin-top:16px">
+                <md-button style="margin-left:0px" class="md-primary md-raised" ng-click="c.run()">
+                  <i class="fa fa-play fa-fw"></i> <span translate="TDIAG.COMPILE"></span>
+                </md-button> 
+              </div>
+
+              <div style="margin-left:20px;margin-right:20px;" translate="TDIAG.OUTPUT"></div>
+              <div style="margin-left:20px;margin-right:20px;position:relative;height:200px;margin-bottom:5px;box-sizing: border-box;border:1px solid #999;margin-top:4px">
+                 <div ui-codemirror="{lineNumbers: true,lineWrapping:true, theme:'default', mode:null}" ng-model="c.runParserOutput" readonly ui-refresh="c.runParserOutput"></div>
+              </div>
+            </md-content>
+          </div>
+
+
+          <div ng-if="c.showParseTable" layout-fill flex="50" style="position:relative;z-index: 1;max-width:320px" class="md-whiteframe-z2">
+            <md-toolbar layout="row" layout-align="center center" class="md-primary" style="position:absolute;width:100%;min-height:48px"> 
+              <span style="padding:10px;font-size:75%;font-weight:500" translate="TDIAG.PARSERTABLE"></span>
+              <span flex></span>
+              <md-button class="md-icon-button" aria-label="close" ng-click="c.showParseTable = !c.showParseTable">
+                <i class="fa fa-times fa-fw"></i>
+              </md-button>
+            </md-toolbar>
+            <md-content layout-fill layout="column">
+              <div style="margin-top:48px;padding:10px" ng-bind-html="c.parseTable"></div>
+            </md-content>
+          </div>
+
+          <div ng-if="c.showBuildHints" style="z-index:100; position:absolute;background:white;width:50%;left:25%;top:48px" class="md-whiteframe-z2" ng-click="c.showBuildHints = false;">
+            <div style="padding:20px"><pre style="white-space:pre-wrap" ng-bind-html="c.buildParserOutputHTML"></pre></div>
+          </div>
+        </md-content>
+      </div>
+</md-dialog>

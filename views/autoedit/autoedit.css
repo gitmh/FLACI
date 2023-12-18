@@ -1,0 +1,309 @@
+body > div > div > md-tabs > md-tabs-wrapper{
+  padding-right: 100px;
+}
+.state {
+  fill:#fff;
+  stroke:#333;
+  stroke-width: 2px;
+  pointer-events:none;
+}
+.state.play { 
+  fill: rgba(255,215,64,1);
+}
+.newState {
+  opacity:0.5;
+}
+.popupButtons {
+  background:white;
+  border-top:1px solid #eee;
+  position:relative;
+  z-index:2;
+}
+.traceCorrect { 
+  background-color: rgba(0,255,0,0.2);  
+}
+.traceNotCorrect { 
+  background-color: rgba(255,0,0,0.2);
+}
+
+.stateInnerCircle {
+  fill:none;
+  stroke:#333;
+  stroke-width: 2px;
+  pointer-events:none;
+}
+
+.stateHiddenOuterCircle {
+  fill:none;
+  stroke:transparent;
+  stroke-width: 16px;
+  pointer-events:auto;
+  cursor:alias;
+}
+.stateHiddenOuterCircle:hover { 
+  stroke: rgba(2,136,255,0.2);  
+}
+
+.startLabel {
+  font-size:80%;
+}
+
+.stateName {
+  text-anchor: middle;
+  pointer-events: none; 
+  fill: #333;
+  alignment-baseline: central;
+  dominant-baseline: central;
+}
+
+.transitionLabelText, .transitionLabelText tspan {
+  text-anchor: middle;
+  fill: #333;
+  alignment-baseline: central;
+  dominant-baseline: central;
+  pointer-events:auto;
+  cursor:pointer;
+}
+
+.transitionLabelText .error { 
+  text-shadow:
+   -2px -2px 1px rgba(255,0,0,0.2),  
+    2px -2px 1px rgba(255,0,0,0.2),  
+    -2px 2px 1px rgba(255,0,0,0.2),  
+     2px 2px 1px rgba(255,0,0,0.2);
+}
+
+.transitionLabelText .play { 
+  text-shadow:
+   -2px -2px 1px rgba(255,215,64,0.8),  
+    2px -2px 1px rgba(255,215,64,0.8),  
+    -2px 2px 1px rgba(255,215,64,0.8),  
+     2px 2px 1px rgba(255,215,64,0.8);
+}
+
+.transitionLabelText:hover{
+  text-shadow:
+   -2px -2px 1px rgba(2,136,255,0.2),  
+    2px -2px 1px rgba(2,136,255,0.2),  
+    -2px 2px 1px rgba(2,136,255,0.2),  
+     2px 2px 1px rgba(2,136,255,0.2);
+}
+
+
+.labelAlign_left, .labelAlign_left tspan {
+  text-anchor: start;
+}
+.labelAlign_center, .labelAlign_center tspan {
+  text-anchor: middle;
+}
+.labelAlign_right, .labelAlign_right tspan {
+  text-anchor: end;
+}
+.labelAlign_top, .labelAlign_top tspan {
+  alignment-baseline: central;
+  dominant-baseline: central;
+}
+.labelAlign_bottom, .labelAlign_bottom tspan {
+  alignment-baseline: central;
+  dominant-baseline: central;
+}
+.labelAlign_middle, .labelAlign_middle tspan {
+  alignment-baseline: central;
+  dominant-baseline: central;
+}
+
+
+.stateHiddenCircle {
+  stroke-width: 10px; 
+  stroke: transparent;  
+  fill:transparent;
+}
+.stateHiddenCircle:hover, .stateHiddenCircle.selected { 
+  stroke: rgba(2,136,255,0.2);   
+}
+.stateHiddenCircle.error { 
+  stroke: rgba(255,0,0,0.2);  
+}
+.stateHiddenCircle.play { 
+  stroke: rgba(255,215,64,0.5); 
+}
+
+.selectedState {
+  fill: #BED9F1;  
+}
+
+.transitionLine { 
+  stroke-width: 2px; 
+  fill:none;
+  stroke: #333;
+  pointer-events:none;
+}
+.transition .transitionLine:hover { 
+  stroke: #00f;
+}
+.newTransitionLine {
+  stroke-width: 2px; 
+  fill:none;
+  stroke: rgb(25,118,210);
+  pointer-events:none;
+}
+.transitionArrow { 
+  fill: #333;
+  stroke-width:0;
+  pointer-events:none;
+}
+.newTransitionArrow { 
+  fill: rgb(25,118,210);
+  stroke-width:0;
+  pointer-events:none;
+}
+
+.transition .transitionHiddenLine { 
+  stroke-width: 15px; 
+  stroke: transparent;  
+  fill:transparent;
+  cursor:move;
+}
+.transition .transitionHiddenLine:hover, .transition .transitionHiddenLine.selected { 
+  stroke: rgba(2,136,255,0.2);   
+}
+.transition .transitionHiddenLine:hover ~ .transitionArrow, 
+.transition .transitionHiddenLine.selected ~ .transitionArrow { 
+  fill: rgb(25,118,210);  
+}
+.transition .transitionHiddenLine.error { 
+  stroke: rgba(255,0,0,0.2);  
+}
+.transition .transitionHiddenLine.play { 
+  stroke: rgba(255,215,64,0.5);  
+}
+
+.labelButton {
+  min-width:4em;
+  padding-left:16px;
+  padding-right:16px;
+  text-transform:none !important;
+}
+
+.stackWordItem {
+  padding-left:2px;
+  padding-right:2px;
+  display:inline-block;
+}
+.stackWordItem:hover{
+  background:rgba(0,0,0,0.1);
+}
+
+.transitionGraph {
+  font-family:Roboto,sans-serif;
+  min-width:100%; 
+  min-height:100%; 
+  display: block;
+  position:absolute;
+  pointer-events:none;
+}
+.transitionGraph.zoom25 {
+  transform:scale(0.25);
+  transform-origin: top left;
+}
+.transitionGraph.zoom50 {
+  transform:scale(0.5);
+  transform-origin: top left;
+}
+.transitionGraph.zoom75 {
+  transform:scale(0.75);
+  transform-origin: top left;
+}
+.transitionGraph.zoom125 {
+  transform:scale(1.25);
+  transform-origin: top left;
+}
+.transitionGraph.zoom150 {
+  transform:scale(1.5);
+  transform-origin: top left;
+}
+.transitionGraphZoomButtons {
+  position:absolute;
+  bottom:10px;
+  right:10px;
+}
+.tapePanel {
+  position:absolute;
+  bottom:10px;
+  left:24px;
+  right:144px;
+  height:32px;
+  pointer-events:none;
+  background:rgba(255,255,255,0.8);
+  display:flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding:4px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-right-radius: 8px;
+}
+.tapePanelLabel {
+  position:absolute;
+  top:-1.6em;
+  left:0;
+  padding:0.25em;
+  background:rgba(255,255,255,0.8);
+  font-weight:bold;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+.tapePanelBlock {
+  width:100%;
+  flex-shrink:1;
+  height:100%;
+  border:1px solid #f1f1f1;
+  box-sizing:border-box;
+  background:rgba(255,255,255,0.8);
+  display:flex;
+  align-items: center;
+  justify-content:center;
+  overflow:hidden;
+}
+.tapePanelBlock.noBorder {
+  border-color:transparent;
+}
+.tapePanelBlock.currentPointer {
+  background:rgba(255,215,64,0.9);
+}
+
+.stackPanel {
+  position:absolute;
+  bottom:24px;
+  left:24px;
+  top:24px;
+  pointer-events:none;
+  background:rgba(255,255,255,0.8);
+  display:flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: flex-start;
+  padding:4px;
+  border-radius:8px;
+}
+.stackPanelLabel {
+  padding:0.25em;
+  font-weight:bold;
+}
+.stackPanelBlock {
+  width:100%;
+  flex-shrink:1;
+  height:100%;
+  border:1px solid #f1f1f1;
+  box-sizing:border-box;
+  background:rgba(255,255,255,0.8);
+  display:flex;
+  align-items: center;
+  justify-content:center;
+  height:2em;
+  overflow:hidden;
+}
+.stackPanelBlock.currentPointer {
+  background:rgba(255,215,64,0.9);
+}
+

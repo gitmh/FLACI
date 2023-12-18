@@ -1,0 +1,221 @@
+html, body {
+  height:100%;
+  margin: 0px;
+  padding: 0px;
+}
+*:focus {
+    outline: none;
+}
+md-tabs {
+  background:white;
+}
+.primaryColor {
+  color:rgb(2,136,209);
+}
+.primaryBackground {
+  background-color:rgb(2,136,209);
+}
+.prewrap {
+  white-space:pre-wrap;
+}
+
+md-backdrop.md-dialog-backdrop{
+  z-index:109;
+}
+md-dialog {
+  border-radius:0 !important;
+}
+.md-dialog-container {
+  z-index:110;
+}
+md-menu-content {
+  background-color:white !important;
+}
+
+md-input-container {
+  box-sizing:border-box;
+}
+md-input-container label {
+  box-sizing:border-box;
+}
+
+.noselect {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.selectable {
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+.LRPaddingSpan {
+  padding-left:1em;
+  padding-right:1em;
+}
+
+.mainAppBtn {
+  display:inline-block; 
+  background:white;
+  margin:10px;
+  width:260px;
+  padding:10px;
+  cursor:pointer;
+}
+.mainAppBtn:hover {
+  background:#CEE5F1;
+}
+.flaciItemCard {
+  overflow: hidden;
+  background:white;
+  margin:20px;
+  width:280px;
+  height:234px;
+  display:inline-block;
+  position:relative;
+}
+
+.flaciItemCard .cardImage {
+  cursor:pointer;
+  width:264px;
+  height:170px;
+  position:absolute; 
+  overflow:hidden;
+  background:#eee;
+  bottom:16px;
+  z-index:0;
+}
+.flaciItemCard .cardTitle {
+  width:100%;
+  padding:0px;
+  position:relative;
+  z-index:2;
+  background:white;
+}
+.flaciItemCard .cardLastChange {
+  width:100%;
+  font-size:70%;
+  padding:0px;
+  position:relative;
+  z-index:2;
+  background:white; 
+  padding-bottom:10px;
+}
+
+
+.layout-padding > span {
+  padding:0px;
+}
+md-tab-content {
+  background:rgb(238,238,238);
+}
+
+.mainAppBtn h4 {
+  padding:0px;
+  margin-top:0px;
+}
+md-list-item.active div{
+  color: #0895E2 !important;
+  font-weight: bold !important;
+}
+
+.appIcon {
+  display:inline-block;
+  width:40px;
+  text-align:center;
+  vertical-align:middle;
+  height:40px;
+  line-height: 40px;
+  margin:4px;
+}
+.appIconLarge {
+  font-size:200%;
+  display:block;
+  width:80px;
+  text-align:center;
+  vertical-align:middle;
+  height:80px;
+  line-height: 80px;
+  margin:auto;
+}
+
+.view-animate {
+  position:absolute;
+  display:block;
+  height:100%!important;
+  width:100%!important;
+}
+.view-animate.ng-enter, .view-animate.ng-leave {
+  -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 1.5s;
+  transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 1.5s;
+
+  border-left:1px solid black;
+
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+}
+
+.view-animate.ng-enter {
+  opacity:0;
+}
+.view-animate.ng-enter.ng-enter-active {
+  opacity:1;
+}
+.view-animate.ng-leave.ng-leave-active {
+  opacity:0;
+}
+
+i.fa {
+  font-size:130%;
+  vertical-align: middle;
+}
+
+md-dialog .md-default-theme {
+  background-color:white;
+}
+md-dialog.md-default-theme {
+  background-color:white;
+}
+
+.codeMirrorPanel {
+  position: absolute;
+  top:41px;
+  bottom:0px;
+  left: 0px;
+  width:100%;
+  box-sizing: border-box;
+}
+.CodeMirror {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  height: initial;
+  font-size: 120%;
+}
+
+.md-tab {
+  text-transform:none !important;
+}
+md-menu-content {
+  max-height:354px;
+}
+
+.cardSymbol{
+  position:absolute;
+  margin-left:-33px;
+  margin-top:0px;
+  color:rgb(2,136,209);
+}
+
+

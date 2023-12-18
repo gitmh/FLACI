@@ -1,0 +1,484 @@
+<div ng-controller="kfgEditController as self" style="height:100%">
+  <md-toolbar layout="row" layout-align="center center" style="height:64px">
+    <ng-include src="'appmenu.html'"></ng-include>
+    <span flex translate="MODULEKFGEDIT"></span>
+    <span flex></span>
+    <ng-include src="'languageselect.html'"></ng-include>
+    &nbsp;
+  </md-toolbar>
+
+  <md-tabs md-stretch-tabs="no" class="mainTabs" md-border-bottom  md-selected="self.selectedTab" md-swipe-content="false">
+    <md-tab  md-on-select="self.loadFromServer()">
+      <md-tab-label><span translate="KFGEDIT.MYGRAMMARS"></span></md-tab-label>
+      <md-tab-body></md-tab-body>
+    </md-tab>
+    <md-tab ng-repeat="g in self.openTabs" md-on-select="self.refreshCodemirror()">
+      <md-tab-label>
+        {{g.Name}} 
+        <md-button aria-label="schliessen" ng-click="self.closeGrammar(g,$event)" class="closeTabBtn"><i class="fa fa-times"></i></md-button>
+      </md-tab-label>
+      <md-tab-body></md-tab-body>
+    </md-tab>
+  </md-tabs>
+  <div style="position:absolute;right:0;top:66px">
+    <input class="ng-hide" id="uploadGrammarFile" type="file" onchange="angular.element(this).scope().self.uploadGrammar(this)" accept="text/json" />
+    <label class="md-button md-icon-button" for="uploadGrammarFile"><i class="fa fa-folder-open fa-fw"></i><md-tooltip md-direction="left"><span translate="OPENFILE"></span></md-tooltip></label>
+  </div>
+  <div style="position:absolute;right:48px;top:66px" ng-show="self.selectedTab > 0">
+    <md-button class="md-icon-button" ng-click="self.downloadGrammarFromTab(self.openTabs[self.selectedTab-1],$event)" aria-label="download"><i class="fa fa-fw fa-download"></i><md-tooltip md-direction="left"><span translate="MENUDOWNLOAD"></span></md-tooltip></md-button>
+  </div>    
+  <div style="position:absolute;right:64px;top:66px;width:150px" ng-show="self.selectedTab == 0">
+    <md-input-container md-no-float="" style="margin:4px">
+      <i class="fa fa-fw fa-search" style="position:absolute;left:0px;top:8px"></i>
+      <input style="padding-left:28px" ng-model-options="{ debounce: 500 }" type="text" ng-model="self.searchTerm" placeholder="{{'SEARCH' | translate}}">
+    </md-input-container>
+  </div>  
+
+  <div style="position:absolute;left:0;top:112px;right:0px;bottom:0px">
+    <!-- Main Screen with all grammars -->
+    <md-content id="scrollContainer" ng-show="self.selectedTab == 0" layout-fill style="overflow:auto;max-height: 100%;  height: 100%;position: absolute;">
+     <div infinite-scroll="self.loadMoreGrammars()" infinite-scroll-parent="true" infinite-scroll-distance="1">
+      <div ng-repeat="g in self.grammars | filter:self.searchTerm | limitTo:self.loadedGrammarsCount track by g.ID" class="flaciItemCard md-whiteframe-z2" layout-padding>
+        <div layout-padding layout="column" layout-align-gt-sm="row" layout-align="space-between center">
+          <div ng-if="g.Description && g.Description != ''" style="position:absolute;z-index:2;background:white;padding:16px;left:0;bottom:0;width:100%;text-overflow:ellipsis;white-space:nowrap;overflow:hidden">{{g.Description}}</div>
+          <div class="cardTitle">
+            <div style="float:right;padding:0">
+              <i ng-show="g.Public == 1" class="fa fa-fw fa-globe"></i>
+              <md-menu style="padding:0px">
+                <md-button ng-click="$mdOpenMenu($event)" class="md-no-style" style="min-width: 1em;  min-height: 1em;line-height: 1em;" aria-label="Open sample menu">
+                  <i class="fa fa-bars"></i>
+                </md-button>
+                <md-menu-content>
+                  <md-menu-item>
+                    <md-button ng-click="self.editGrammar(g,$event)" aria-label="edit"><i class="fa fa-fw fa-pencil"></i> <span translate="MENUCHANGE"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item>
+                    <md-button ng-click="self.duplicateGrammar(g,$event)" aria-label="duplicate"><i class="fa fa-fw fa-copy"></i> <span translate="MENUDUPLICATE"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item ng-show="self.userLogin.isPublisher && g.Public == 1">
+                    <md-button ng-click="self.unpublishGrammar(g,$event)" aria-label="unpublish"><i class="fa fa-fw fa-globe"></i> <span translate="MENUUNPUBLISH"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item ng-show="self.userLogin.isPublisher && g.Public == 0">
+                    <md-button ng-click="self.publishGrammar(g,$event)" aria-label="publish"><i class="fa fa-fw fa-globe"></i> <span translate="MENUPUBLISH"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item ng-show="g.ID.indexOf('local') == -1">
+                    <md-button ng-click="self.getWeblink(g,$event)"  aria-label="weblink"><i class="fa fa-fw fa-link"></i> <span translate="MENULINK"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item>
+                    <md-button ng-click="self.downloadGrammar(g,$event)" aria-label="download"><i class="fa fa-fw fa-download"></i> <span translate="MENUDOWNLOAD"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item>
+                    <md-button ng-click="self.deleteGrammar(g,$event)"  aria-label="delete"><i class="fa fa-fw fa-trash"></i> <span translate="MENUDELETE"></span></md-button>
+                  </md-menu-item>
+                </md-menu-content>
+              </md-menu>
+            </div>
+            <big><b>{{g.Name}}</b></big>
+          </div>
+          <div class="cardLastChange"><span translate="LASTCHANGE"></span>: {{g.lastChange()}}</div>
+
+          <div class="cardImage" ng-click="self.openGrammar(g,$event)" >
+            <div class="parserRules" style="top:-50%;left:-50%;bottom:auto;overflow:hidden;transform:scale(0.5);width:200%;height:200%">
+              <div class="parserRuleElements">
+                <div class="parserRule" ng-repeat="(rIndex, rule) in ::g.grammar.bnf track by $index">
+                  <div class="parserRuleInner">
+                    <div style="position:absolute;top:0px;width:100%;height:10px"></div>
+                    <div class="parserRuleName">{{::rule.name}}</div>
+                    <div class="parserRuleRightHandSides">
+                      <div class="parserRuleRightHandSide" ng-class="::{'first':$first}" ng-repeat="(rhsIndex, rhs) in ::rule.rhs track by $index">
+                        <div class="parserRuleStartArrow" ng-if="::$first"></div>
+                        <div class="parserRuleStartLineArrow" ng-if="::!$first"><div></div></div>
+                        <div class="parserRuleRightHandSideInner">
+                          <div class="parserRuleRightHandSideElements" ng-class="::{'empty':rhs[0].length == 0}">
+                            <div class="parserRuleRightHandSideStartArrow"></div>
+                            <div class="parserRuleRightHandSideElement" style="position:relative" ng-repeat="(eIndex,e) in ::rhs[0] track by $index" 
+                                 ng-class="::{'last':$last}">
+                              <div ng-if="::e.type == 't'" class="parserRuleTerminalElement"> {{::e.name}}
+                                <div class="parserRuleElementArrow"></div>
+                              </div>
+                              <div ng-if="::e.type == 'nt'" class="parserRuleNoneTerminalElement"> {{::e.name}} 
+                                <div class="parserRuleElementArrow"></div>
+                              </div>
+                            </div> 
+                            <div ng-if="::rhs[0].length == 0" style="position: absolute;left: 36px;display:none">&epsilon;</div>
+                            <div class="parserRuleRightHandSideEndArrowLine"><div></div></div>
+                          </div>
+                        </div>
+                        <div class="parserRuleRightHandSideEndArrow" ng-if="::$first"></div>
+                        <div class="parserRuleRightHandSideEndLineArrow" ng-if="::!$first"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+     </div>
+    </md-content>
+    <!-- END Main Screen with all grammars -->
+    <md-button ng-show="self.selectedTab == 0" class="md-fab md-primary md-hue-1 addButton" 
+      ng-click="self.createGrammar($event)"  aria-label="create">
+      <i class="fa fa-plus fa-fw"></i>
+      <md-tooltip md-direction="top"><span translate="KFGEDIT.CREATENEWGRAMMAR"></span></md-tooltip>
+    </md-button>
+    <!-- Tab Screen with current grammar -->
+    <md-content ng-show="self.selectedTab == $index+1" ng-repeat="g in self.openTabs track by g.ID" layout="row" layout-fill>
+      <!-- Main Grammar area -->
+
+        <md-toolbar layout="row" layout-align="start center" class="md-primary md-hue-2" style="position: absolute;top: 0;left: 0;right: 0;min-height:48px;height:48px;overflow:hidden">
+          <span style="margin-left:8px;line-height: 48px;font-size:14px; font-weight: 500;"><span translate="KFGEDIT.GRAMMAR"></span>:</span>
+          <md-button aria-label="undo" ng-click="g.undo()" ng-disabled="g.historyPointer == 0" style="min-width: 1em;">
+            <i class="fa fa-undo"></i>
+            <md-tooltip direction="top"><span translate="UNDO"></span></md-tooltip>
+          </md-button>
+          <md-button aria-label="redo" ng-click="g.redo()" ng-disabled="g.historyPointer == g.history.length-1" style="min-width: 1em;">
+            <i class="fa fa-undo fa-flip-horizontal"></i>
+            <md-tooltip direction="top"><span translate="REDO"></span></md-tooltip>
+          </md-button>
+
+          <md-button aria-label="edit mode" ng-click="g.displayAsText = !g.displayAsText; g.updateGrammarText()" style="min-width: 1em;">
+            <i class="fa fa-fw fa-font" ng-class="{'fa-font':g.displayAsText == false, 'fa-object-group':g.displayAsText == true}"></i>
+            <md-tooltip ng-if="!g.displayAsText" direction="top"><span translate="KFGEDIT.TEXTMODE"></span></md-tooltip>
+            <md-tooltip ng-if="g.displayAsText" direction="top"><span translate="KFGEDIT.DIAGRAMMODE"></span></md-tooltip>
+          </md-button>
+
+          <md-button aria-label="rename nonterminal" ng-click="g.showRenameNonterminal($event)" style="min-width: 1em;">
+            <i class="fa fa-fw fa-tags"></i>
+            <md-tooltip direction="top"><span translate="KFGEDIT.RENAMENONTERMINAL"></span></md-tooltip>
+          </md-button>
+
+          <md-button aria-label="full grammar" ng-click="g.showFullGrammar($event)" style="min-width: 1em;">
+            <i class="fa fa-eye"></i>
+            <md-tooltip direction="top"><span translate="KFGEDIT.FULLGRAMMAR"></span></md-tooltip>
+          </md-button>
+
+          <md-menu style="margin:0">
+            <md-button ng-click="$mdOpenMenu($event)" style="min-width:3em; margin: 5px;" aria-label="check" >
+              <i class="fa fa-fw fa-check-circle"></i>
+              <span hide-xs hide-sm hide-md style="text-transform:none" translate="KFGEDIT.CHECK"></span>
+              <md-tooltip hide-gt-md direction="top"><span translate="KFGEDIT.CHECK"></span></md-tooltip>
+            </md-button>
+            <md-menu-content>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.checkLL1Grammar($event)" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.CHECKLL1"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.CHECKLL1HINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;"  ng-click="g.isGrammarRegular($event)" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.ISREGULAR"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.ISREGULARHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+          <md-menu style="margin:0">
+            <md-button ng-click="$mdOpenMenu($event)" style="min-width:3em; margin: 5px;" aria-label="transform" >
+              <i class="fa fa-fw fa-industry"></i> 
+              <span hide-xs hide-sm hide-md style="text-transform:none" translate="KFGEDIT.TRANSFORMATIONS"></span>
+              <md-tooltip hide-gt-md direction="top"><span translate="KFGEDIT.TRANSFORMATIONS"></span></md-tooltip>
+            </md-button>
+            <md-menu-content>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.convertGrammarToCNF()" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.TOCNF"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.TOCNFHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.insertEpsilonGrammar()" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.INSERTEPSILON"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.INSERTEPSILONHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.removeEpsilonGrammar()" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.REMOVEEPSILON"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.REMOVEEPSILONHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.cleanupGrammar()" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.SIMPLIFY"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.SIMPLIFYHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.removeChainsGrammar()" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.REMOVELOOPS"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.REMOVELOOPSHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.removeLeftRecursionGrammar()" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.REMOVELEFTREC"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.REMOVELEFTRECHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.leftFactorGrammar()" class="md-primary">
+                  <span translate="KFGEDIT.TRANSFORM.LEFTFACTOR"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.TRANSFORM.LEFTFACTORHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+          <md-menu style="margin:0">
+            <md-button ng-click="$mdOpenMenu($event)" style="min-width:3em; margin: 5px;" aria-label="export">
+              <i class="fa fa-fw fa-external-link"></i>
+              <span hide-xs hide-sm hide-md style="text-transform:none" translate="KFGEDIT.CONVERTS"></span>
+              <md-tooltip hide-gt-md direction="top"><span translate="KFGEDIT.CONVERTS"></span></md-tooltip>
+            </md-button>
+            <md-menu-content>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.convertRegularGrammar2regex()" class="md-primary">
+                  <span translate="KFGEDIT.CONVERT.TOREGEX"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.CONVERT.TOREGEXHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.convertRegularGrammar2NEA()" class="md-primary">
+                  <span translate="KFGEDIT.CONVERT.TONEA"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.CONVERT.TONEAHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item layout="row">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.convertContextFreeGrammar2NKA()" class="md-primary">
+                  <span translate="KFGEDIT.CONVERT.TONKA"></span> 
+                </md-button>
+                <md-button md-prevent-menu-close="md-prevent-menu-close" ng-click="g.showHint('KFGEDIT.CONVERT.TONKAHINT',$event)" style="padding:0;text-align:center;min-width:3em;width:3em;margin:0" class="md-primary">
+                  <i class="fa fa-question-circle fa-fw"></i>
+                </md-button>
+              </md-menu-item>
+
+              <md-menu-item layout="row" ng-if="!g.displayAsText"> 
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.downloadSyntaxPNG()" class="md-primary">
+                  <span translate="KFGEDIT.CONVERT.DOWNLOADSYNTAXPNG"></span> 
+                </md-button>
+              </md-menu-item>
+
+              <md-menu-item layout="row" ng-if="g.derivationTrees.length > 0">
+                <md-button flex style="text-align:left;text-transform: initial;" ng-click="g.downloadDerivationPNG()" class="md-primary">
+                  <span translate="KFGEDIT.CONVERT.DOWNLOADDERIVATIONPNG"></span> 
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+
+          <span flex></span>
+
+          <span style="line-height: 48px;font-size:14px; font-weight: 500;"><span translate="KFGEDIT.DERIVE"></span>:</span>
+          <md-button aria-label="random" style="min-width:3em;text-transform: none; margin: 5px;" ng-click="g.generateRandomWord()">
+            <i class="fa fa-magic"></i>
+            <md-tooltip md-direction="bottom"><span translate="KFGEDIT.RANDOMWORD"></span></md-tooltip>
+          </md-button>
+          <input style="margin-top: 0px; font-size:16px" ng-keydown="$event.keyCode === 13 && g.run()" ng-model="g.grammar.testInput" ng-change="g.derivationTrees = null"  placeholder="&epsilon;" />
+          <md-menu style="margin:0" ng-show="g.grammar.lastInput && g.grammar.lastInput.length > 1" >
+            <md-button ng-click="$mdOpenMenu($event)" aria-label="last inputs" style="position: absolute;padding: 0;width: 1.5em;top: 3px;margin-left: -22px;color: black;" class="md-icon-button"><i class="fa fa-fw fa-caret-down"></i></md-button>
+            <md-menu-content>
+              <md-menu-item ng-repeat="text in g.grammar.lastInput track by $index">
+                <md-button style="text-align:left;text-transform: initial;" ng-click="g.grammar.testInput = text">{{text}} 
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+          <md-button aria-label="derive" style="min-width:3em;text-transform: none; margin: 5px;" ng-click="g.run()">
+            <i class="fa fa-play"></i>
+            <md-tooltip md-direction="bottom"><span translate="KFGEDIT.DERIVE"></span></md-tooltip>
+          </md-button>
+          <md-button aria-label="step" style="min-width:3em;text-transform: none; margin: 5px;" ng-click="g.nextDerivationStep()">
+            <i class="fa fa-step-forward"></i>
+            <md-tooltip md-direction="bottom"><span translate="KFGEDIT.SINGLESTEP"></span></md-tooltip>
+          </md-button>
+          <md-button aria-label="L/R" style="min-width:3em;text-transform: none; margin: 5px;" ng-click="g.rightDerivation = !g.rightDerivation;g.refreshDerivationTree();">
+            {{g.rightDerivation ? 'R':'L'}}
+            <md-tooltip md-direction="bottom"><span translate="KFGEDIT.LEFTRIGHTDERIVATION"></span></md-tooltip>
+          </md-button>
+
+          <md-button aria-label="L/R" ng-class="{'md-accent':g.displayDerivationList}" style="min-width:3em;text-transform: none; margin: 5px;" ng-click="g.displayDerivationList = !g.displayDerivationList;g.refreshDerivationTree();">
+            <i class="fa fa-list"></i>
+            <span hide-xs hide-sm hide-md style="text-transform:none" translate="KFGEDIT.SHOWDERIVATIONLIST"></span>
+            <md-tooltip hide-gt-md direction="top"><span translate="KFGEDIT.SHOWDERIVATIONLIST"></span></md-tooltip>
+          </md-button>
+
+          <span flex></span>
+
+        </md-toolbar>
+    
+      <md-content ng-if="!g.displayAsText" style="flex-shrink:2" layout-fill layout-padding layout="column" class="md-whiteframe-6dp">
+        <div style="position:absolute;top:0px;left:0;right:0;bottom:0;overflow:hidden">
+            <div class="parserRules" ng-attr-id="{{'syntaxRules'+g.ID}}" style="bottom:0" ng-click="g.deselectAll(); g.addElementOpen = false;">
+              <div class="parserRuleElements" as-sortable="g.sameListSortOptions" ng-model="g.grammar.bnf">
+                <div class="parserRule" id="parserlist_{{g.ID}}_{{$index}}" ng-repeat="(rIndex, rule) in g.grammar.bnf" as-sortable-item >
+                  <div class="parserRuleInner" ng-click="g.selectRule(rule);$event.stopPropagation()" ng-class="{selected : g.selectedRule == rule}">
+                    <div as-sortable-item-handle style="position:absolute;top:0px;width:100%;height:10px"></div>
+                    <div class="parserRuleName"><input ng-change="g.updateRuleNamesInBNF(rule.name,'{{rule.name}}')" ng-model-options="{ debounce: 500 }" ng-model="rule.name" no-drag /></div>
+                    <md-button ng-show="g.selectedRule == rule" aria-label="delete" style="min-width:3em;width:3em;margin:0px;position:absolute;right:2px;top:2px;" ng-click="g.deleteParserRule()"><i class="fa fa-trash-o"></i></md-button>
+
+                    <div class="parserRuleRightHandSides" as-sortable="g.sameListSortOptions" ng-model="rule.rhs">
+
+                      <div class="parserRuleRightHandSide" ng-class="{'first':$first}" ng-repeat="(rhsIndex, rhs) in rule.rhs" as-sortable-item >
+                        <md-button ng-show="g.selectedRHS == rhs" aria-label="delete" style="min-width:2em;width:2em;margin:0px;position:absolute;right:-22px;top:-8px;font-size:70%" ng-click="g.deleteParserRHS()"><i class="fa fa-trash-o"></i></md-button>
+
+                        <div class="parserRuleStartArrow" ng-if="$first"></div>
+                        <div class="parserRuleStartLineArrow" ng-if="!$first"><div></div></div>
+
+                        <div class="parserRuleRightHandSideInner" id="parserlist_{{g.ID}}_{{rIndex}}_{{$index}}" ng-click="g.selectRHS(rhs,rule);$event.stopPropagation()" ng-class="{selected : g.selectedRHS == rhs}">
+                          <div as-sortable-item-handle class="moveHandle"></div>
+                          <div class="parserRuleRightHandSideElements" ng-class="{'empty':rhs[0].length == 0}" as-sortable="g.sameListSortOptions" ng-model="rhs[0]">
+                            <div class="parserRuleRightHandSideStartArrow"></div>
+
+                            <div class="parserRuleRightHandSideElement" ng-click="g.selectRHSElement(e,rhs,rule);$event.stopPropagation()" style="position:relative" ng-repeat="(eIndex,e) in rhs[0]" as-sortable-item ng-class="{'last':$last, selected : g.selectedRHSElement == e}" id="parserlist_{{g.ID}}_{{rIndex}}_{{rhsIndex}}_{{$index}}">
+                              <md-button ng-show="g.selectedRHSElement == e" aria-label="delete" style="min-width:2em;width:2em;margin:0px;position:absolute;right:-1px;top:-6px;font-size:50%;z-index:2;padding:2px" ng-click="g.deleteParserRHSElement()"><i class="fa fa-trash-o"></i></md-button>
+
+                              <div ng-if="e.type == 't'" class="parserRuleTerminalElement" as-sortable-item-handle> 
+                                <input type="text" ng-trim="false" style="margin:-5px;padding:0;border:0;background:transparent;text-align:center;font-family:monospace;font-size:130%" ng-change="g.replaceTokenSpace(e); g.updateGrammarText();" ng-model-options="{ debounce: 500 }" ng-model="e.name" ng-attr-size="{{e.name.length+1}}" onkeypress="this.size = this.value.length+1"/> 
+                                <div class="parserRuleElementArrow"></div>
+                              </div>
+                              <div ng-if="e.type == 'nt'" class="parserRuleNoneTerminalElement" as-sortable-item-handle> 
+                                {{e.name}} 
+                                <div class="parserRuleElementArrow"></div>
+                              </div>
+                            </div>
+
+                            <div ng-if="g.selectedRHS == rhs" class="addBubbleElement">
+                              <md-button aria-label="add righthandside" class="md-primary md-hue-1" ng-click="g.addElementOpen = true; g.setAddPanelPosition($event); $event.stopPropagation()">
+                                <i class="fa fa-fw fa-plus"></i>
+                              </md-button>
+                            </div>
+                            <div ng-if="rhs[0].length == 0" style="position: absolute;left: 36px;display:none">&epsilon;</div>
+ 
+                            <div class="parserRuleRightHandSideEndArrowLine"><div></div></div>
+                          </div>
+                        </div>
+    
+                        <div class="parserRuleRightHandSideEndArrow" ng-if="$first"></div>
+                        <div class="parserRuleRightHandSideEndLineArrow" ng-if="!$first"></div>
+                      </div>
+                    </div>
+
+                    <div ng-if="g.selectedRule == rule" class="addBubble">
+                      <md-button aria-label="add righthandside" ng-click="g.addRuleRHS(rule);$event.stopPropagation()" class="md-primary md-hue-1"><i class="fa fa-fw fa-plus"></i> <span translate="TDIAG.ADDRHS"></span></md-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="height:100px"></div>
+              <!-- <md-button ng-click="g.addRule()"><i class="fa fa-fw fa-plus"></i> Regel hinzufügen</md-button>-->
+            </div>
+
+        </div>
+      </md-content>
+
+      <!-- Add element panel -->
+      <div ng-if="g.addElementOpen && !g.displayAsText" id="parserlistAddPanel_{{g.ID}}" class="addBubbleSelectPanel" ng-click="$event.stopPropagation()" 
+           ng-style="{'left':g.getOpenAddPanelX()+'px', 'top':g.getOpenAddPanelY()+'px'}" draggable>
+
+        <div style="color:rgba(0,0,0,0.54);font-size:70%;display:block;margin-bottom:4px;text-transform:uppercase" >
+          <span translate="TDIAG.ADDELEMENTRHS"></span> 
+          <div style="position:absolute;right:4px;top:4px;cursor:pointer" ng-click="g.addElementOpen = false; $event.stopPropagation()"><i class="fa fa-times"></i></div>
+        </div>
+
+        <div ng-repeat="t in g.grammar.lex.rules">
+          <div ng-if="t.name != 'IGNORE'" style="padding-left:0px;padding-right:0px;margin:5px;font-family:monospace;font-size:130%;font-weight:normal" class="parserRuleTerminalElement" ng-click="g.addRuleRHSElement(g.selectedRHS,t.name,'t')">&nbsp;{{t.name}}&nbsp;</div>
+        </div>
+
+        <div ng-repeat="r in g.grammar.bnf">
+          <div class="parserRuleNoneTerminalElement" style="margin:5px;" ng-click="g.addRuleRHSElement(g.selectedRHS,r.name,'nt')"> 
+            {{r.name}} 
+          </div>
+        </div>
+        <br>
+        <md-button aria-label="new terminal" style="text-transform:none" ng-click="g.addRuleRHSElement(g.selectedRHS,g.addToken(),'t')" class="md-primary md-hue-1"><i class="fa fa-fw fa-plus"></i> <span translate="KFGEDIT.NEWTERMINAL"></span></md-button>
+
+        <md-button aria-label="new nonterminal" style="text-transform:none" ng-click="g.addRuleRHSElement(g.selectedRHS,g.addRule(),'nt')" class="md-primary md-hue-1"><i class="fa fa-fw fa-plus"></i> <span translate="KFGEDIT.NEWNONTERMINAL"></span></md-button>
+      </div>
+
+      <!-- Text input grammar -->
+      <md-content ng-if="g.displayAsText" style="flex-shrink:2" layout-fill layout-padding layout="column" class="md-whiteframe-6dp">
+
+        <div class="codeMirrorPanel" style="top:48px;bottom:240px">
+          <div ui-codemirror="{lineNumbers: true,theme:'default', lineWrapping : true, mode: 'kfgedit', onLoad : g.codemirrorLoaded }" ui-refresh="g.grammar.inputText" ng-model="g.grammar.inputText" ng-change="g.displayAsText ? g.parseGrammar() : void(); g.makeUndoStep()" class="grammarInputEditor"></div>
+        </div>
+
+        <md-toolbar layout="row" layout-align="start center" class="md-primary md-hue-2" style="position: absolute;bottom:199px;left: 0;right: 0;min-height:41px;height:41px">
+          <span ng-if="g.parseError" style="font-size:50%;padding-right:10px;padding-left:10px"><i class="fa fa-bug"></i> {{g.parseError}}</span>
+          <span ng-if="g.parseError == null" style="font-size:50%;padding-right:10px;padding-left:10px"><i class="fa fa-check"></i> <span translate="KFGEDIT.VALIDGRAMMAR"></span></span>
+        </md-toolbar>
+        <div class="grammarHintPanel cm-s-default" style="height:200px;padding:10px;padding-right:20px;box-sizing:border-box;bottom:0px">
+          &nbsp;<i class="fa fa-arrow-up fa-fw"></i> <span translate="KFGEDIT.HOWTO"></span>
+        </div>
+      </md-content>
+
+      <md-content ng-if="g.showDerivationPanel" layout-fill style="position:relative;background:#fff;flex-shrink:1" class="md-whiteframe-6dp">
+        <div layout="row" style="position:absolute;top:48px;left:0px;right:0px;font-size: 16px;margin:0px;z-index:2;background:white;padding:8px">
+          <span flex ng-show="!g.derivationTrees || g.derivationTrees.length == 0"></span>
+          <md-select style="margin:0" flex ng-show="g.derivationTrees.length > 0" ng-model="g.derivationTreeIndex" ng-change="g.refreshDerivationTree()">
+            <md-option ng-repeat="tree in g.derivationTrees" value="{{$index}}"><span translate="KFGEDIT.TREESELECT" translate-values="{'INDEX':$index+1,'TOTAL':g.tooManyTrees ? '?':g.derivationTrees.length}"></span>:</md-option>
+          </md-select>
+          <md-button ng-click="g.showDerivationPanel = false" style="margin:0;min-width:3em;margin-left:1em"><i class="fa fa-times"></i></md-button>
+        </div>
+
+        <div class="derivationTreeViewWrapper">
+          <div class="derivationTreeView zoom{{g.derivationTreeZoom}}" ng-attr-id="{{'derivationTree'+g.ID}}"></div>
+          <div class="derivationTreeViewZoomButtons">
+            <a href="JavaScript:void(0)" ng-click="g.derivationTreeZoom = 25;"><div style="height:0.25em;width:1em;display:inline-block" ng-style="{'background-color':g.derivationTreeZoom == 25 ? '#ccc':'#eee'}"></div></a> 
+            <a href="JavaScript:void(0)" ng-click="g.derivationTreeZoom = 50;"><div style="height:0.5em;width:1em;display:inline-block" ng-style="{'background-color':g.derivationTreeZoom == 50 ? '#ccc':'#eee'}"></div></a> 
+            <a href="JavaScript:void(0)" ng-click="g.derivationTreeZoom = 75;"><div style="height:0.75em;width:1em;display:inline-block" ng-style="{'background-color':g.derivationTreeZoom == 75 ? '#ccc':'#eee'}"></div></a> 
+            <a href="JavaScript:void(0)" ng-click="g.derivationTreeZoom = 100;"><div style="height:1em;width:1em;display:inline-block" ng-style="{'background-color':g.derivationTreeZoom == 100 ? '#ccc':'#eee'}"></div></a> 
+            <a href="JavaScript:void(0)" ng-click="g.derivationTreeZoom = 125;"><div style="height:1.25em;width:1em;display:inline-block" ng-style="{'background-color':g.derivationTreeZoom == 125 ? '#ccc':'#eee'}"></div></a> 
+            <a href="JavaScript:void(0)" ng-click="g.derivationTreeZoom = 150;"><div style="height:1.5em;width:1em;display:inline-block" ng-style="{'background-color':g.derivationTreeZoom == 150 ? '#ccc':'#eee'}"></div></a> 
+          </div>
+        </div>
+      </md-content>
+
+      <md-content style="flex-shrink:2"  layout-fill class="derivationListView" ng-if="g.displayDerivationList">
+        <div style="position:absolute;top:48px;padding:8px;padding-top:0px;bottom:0;left:0;right:0;border-left:1px solid #eee;" layout="column">
+          <div layout="row" style="padding-top:8px;padding-bottom:8px">
+            <span style="color:rgba(0,0,0,0.67); line-height:40px;font-size:16px" flex translate="KFGEDIT.SATZFORMLIST"></span>
+            <md-button ng-click="g.displayDerivationList = false" style="margin:0;min-width:3em;margin-left:1em"><i class="fa fa-times"></i></md-button>
+          </div>
+          <div flex style="overflow:auto;">
+            <div class="derivationList" ng-show="g.derivationTrees.length > 0">
+              <div class="derivationListHeader">
+                <div class="derivationListEntry" style="padding-left:0" translate="KFGEDIT.SATZFORM"></div>
+                <div class="derivationListEntry" style="padding-left:0" translate="KFGEDIT.USEDRULE"></div>
+              </div>
+              <div class="derivationListRow" ng-repeat="entry in g.derivationList">
+                <div class="derivationListEntry" ng-bind-html="::self.trustHTML(entry.current)"></div>
+                <div class="derivationListEntry" ng-bind-html="::self.trustHTML(entry.rule)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </md-content>
+    </md-content>
+  </div>
+</div>

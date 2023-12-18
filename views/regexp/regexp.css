@@ -1,0 +1,39 @@
+.inputText {
+  white-space:pre-wrap;
+}
+
+.errorRegExp{
+  position:absolute;
+  color:red;
+  margin-top:-20px;
+  margin-left:5px;
+  font-size:80%;
+}
+.regExpMatch {
+  color: green;
+  font-weight: bold;
+}
+/* inside codemirror */
+.cm-s-default .cm-comment {
+  color: green;
+  font-weight: bold;
+}
+
+.grammar {
+  margin-left:20px;
+  margin-top: -30px;
+  white-space:pre-wrap;
+  font-family:monospace;
+
+}
+.grammar div{
+  font-family:RobotoDraft, Roboto, 'Helvetica Neue', sans-serif;
+  color:rgba(0,0,0,0.54);
+  font-size:75%;
+  display:block;
+  padding:0;
+  margin-left:-2px;
+  margin-bottom:-5px;
+}
+
+

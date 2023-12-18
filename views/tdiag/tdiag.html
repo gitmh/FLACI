@@ -1,0 +1,532 @@
+<div ng-controller="TDiagController as self" style="height:100%">
+  <md-toolbar layout="row" layout-align="center center" style="height:64px">
+    <ng-include src="'appmenu.html'"></ng-include>
+    <span flex translate="MODULETDIAG"></span>
+    <span flex></span>
+    <ng-include src="'languageselect.html'"></ng-include>
+    &nbsp;
+  </md-toolbar>
+  <md-tabs md-stretch-tabs="auto" class="mainTabs" md-border-bottom  md-selected="self.selectedTab" md-no-swipe>
+    <md-tab md-on-select="self.loadFromServer()">
+      <md-tab-label><span translate="TDIAG.MYDIAGRAMS"></span></md-tab-label>
+      <md-tab-body></md-tab-body>
+    </md-tab>
+    <md-tab ng-repeat="d in self.openTabs">
+      <md-tab-label>
+        {{d.Name}} 
+        <md-button aria-label="close" ng-click="self.closeDiagram(d,$event)" class="closeTabBtn">
+          <i class="fa fa-times"></i>
+        </md-button>
+      </md-tab-label>
+      <md-tab-body></md-tab-body>
+    </md-tab>
+  </md-tabs>
+  <div style="position:absolute;right:0;top:66px">
+    <input class="ng-hide" id="uploadDiagramFile" type="file" onchange="angular.element(this).scope().self.uploadDiagram(this)" accept="text/json" />
+    <label class="md-button md-icon-button" for="uploadDiagramFile"><i class="fa fa-folder-open fa-fw"></i><md-tooltip md-direction="left"><span translate="OPENFILE"></span></md-tooltip></label>
+  </div>
+  <div style="position:absolute;right:48px;top:66px" ng-show="self.selectedTab > 0">
+    <md-button class="md-icon-button" ng-click="self.downloadDiagramFromTab(self.openTabs[self.selectedTab-1],$event)" aria-label="download"><i class="fa fa-fw fa-download"></i><md-tooltip md-direction="left"><span translate="MENUDOWNLOAD"></span></md-tooltip></md-button>
+  </div>  
+  <div style="position:absolute;right:64px;top:66px;width:150px" ng-show="self.selectedTab == 0">
+    <md-input-container md-no-float="" style="margin:4px">
+      <i class="fa fa-fw fa-search" style="position:absolute;left:0px;top:8px"></i>
+      <input style="padding-left:28px" type="text" ng-model-options="{ debounce: 500 }" ng-model="self.searchTerm" placeholder="{{'SEARCH' | translate}}">
+    </md-input-container>
+  </div>  
+
+  <div style="position:absolute;left:0;top:112px;right:0px;bottom:0px">
+    <md-content ng-show="self.selectedTab == 0" layout-fill style="max-height: 100%;  height: 100%; overflow:auto; position: absolute; box-sizing: border-box;">
+     <div infinite-scroll="self.loadMoreDiagrams()" infinite-scroll-parent="true" infinite-scroll-distance="1">
+      <div ng-repeat="d in self.diagrams | filter:self.searchTerm | limitTo:self.loadedDiagramsCount track by d.ID" class="flaciItemCard md-whiteframe-z2" layout-padding>
+        <div layout-padding layout="column" layout-align-gt-sm="row" layout-align="space-between center">
+          <div ng-if="d.Description && d.Description != ''" style="position:absolute;z-index:2;background:white;padding:16px;left:0;bottom:0;width:100%;text-overflow:ellipsis;white-space:nowrap;overflow:hidden">{{d.Description}}</div>
+          <div class="cardTitle">
+            <div style="float:right;padding:0">
+              <i ng-show="d.Public == 1" class="fa fa-fw fa-globe"></i>
+              <md-menu style="padding:0px">
+                <md-button ng-click="$mdOpenMenu($event)" class="md-no-style" style="min-width: 1em;  min-height: 1em;line-height: 1em;" aria-label="menu">
+                  <i class="fa fa-bars"></i>
+                </md-button>
+                <md-menu-content>
+                  <md-menu-item>
+                    <md-button aria-label="user" ng-click="self.editDiagram(d,$event)"><i class="fa fa-fw fa-pencil"></i> <span translate="MENUCHANGE"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item>
+                    <md-button aria-label="duplicate" ng-click="self.duplicateDiagram(d,$event)"><i class="fa fa-fw fa-copy"></i> <span translate="MENUDUPLICATE"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item ng-show="self.userLogin.isPublisher && d.Public == 1">
+                    <md-button aria-label="unpublish" ng-click="self.unpublishDiagram(d,$event)"><i class="fa fa-fw fa-globe"></i> <span translate="MENUUNPUBLISH"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item ng-show="self.userLogin.isPublisher && d.Public == 0">
+                    <md-button aria-label="publish" ng-click="self.publishDiagram(d,$event)"><i class="fa fa-fw fa-globe"></i> <span translate="MENUPUBLISH"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item ng-show="d.ID.indexOf('local') == -1">
+                    <md-button aria-label="weblink" ng-click="self.getWeblink(d,$event)"><i class="fa fa-fw fa-link"></i> <span translate="MENULINK"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item>
+                    <md-button ng-click="self.downloadDiagram(d,$event)" aria-label="download"><i class="fa fa-fw fa-download"></i> <span translate="MENUDOWNLOAD"></span></md-button>
+                  </md-menu-item>
+                  <md-menu-item>
+                    <md-button aria-label="delete" ng-click="self.deleteDiagram(d,$event)"><i class="fa fa-fw fa-trash"></i> <span translate="MENUDELETE"></span></md-button>
+                  </md-menu-item>
+                </md-menu-content>
+              </md-menu>
+            </div>
+            <big><b>{{d.Name}}</b></big>
+          </div>
+          <div class="cardLastChange"><span translate="LASTCHANGE"></span>: {{d.lastChange()}}</div>
+          <div class="cardImage" ng-click="self.openDiagram(d,$event)">
+            <div style="transform: scale(0.5); transform-origin: top left;position:relative;width:200%;height:200%">
+              <div ng-repeat="e in ::d.thumbElements">
+                <!-- Compiler blocks -->
+                <div ng-if="::e.type == 'compiler'" class="shape" 
+                  style="width:150px;height:{{::e.written == 'JS' ? '150':'100'}}px;left:{{::e.x}}px;top:{{::e.y}}px">
+                  <div class="shapeblock borderL borderT borderB" style="left:0px; top:0px">
+                    {{::e.input}}
+                  </div>
+                  <div class="shapeblock borderT" style="left:50px; top:0px">
+                    <span class="bigArrow">&rarr;</span>
+                  </div>
+                  <div class="shapeblock borderR borderT borderB" style="left:100px; top:0px">
+                    {{::e.output}}
+                  </div>
+                  <div class="shapeblock borderL borderR borderB" style="left:50px; top:50px">
+                    {{::e.written}}
+                  </div>
+                  <div ng-if="::e.written == 'JS'" class="shapeblock triangle" style="left:50px; top:100px">
+                    <div></div>
+                  </div>
+                </div>
+
+                <!-- Interpreter blocks -->
+                <div ng-if="::e.type == 'interpreter'" class="shape"
+                     style="width:50px; height:{{::e.written == 'JS' ? '200':'150'}}px;left:{{::e.x}}px;top:{{::e.y}}px" >
+                  <div class="shapeblock borderL borderT borderR" style="left:0px; top:0px">
+                    {{::e.input}}
+                  </div>
+                  <div class="shapeblock borderL borderR" style="left:0px; top:50px">
+                    <span style="font-size:150%;vertical-align:middle">[</span>
+                    <i class="fa fa-cog"></i>
+                    <span style="font-size:150%;vertical-align:middle">]</span>
+                  </div>
+                  <div class="shapeblock borderL borderR borderB" style="left:0px; top:100px">
+                    {{::e.written}}
+                  </div>
+                  <div ng-if="::e.written == 'JS'" class="shapeblock triangle" style="left:0px; top:150px">
+                    <div></div>
+                  </div>
+                </div>
+
+                <!-- Program blocks -->
+                <div ng-if="::e.type == 'program'" class="shape" 
+                  style="width:50px; height:{{::e.written == 'JS' ? '150':'100'}}px;left:{{::e.x}}px;top:{{::e.y}}px" >
+                  <div class="shapeblock borderL borderT borderR" style="left:0px; top:0px">
+                    {{::e.name}}
+                  </div>
+                  <div class="shapeblock borderL borderR borderB" style="left:0px; top:50px">
+                    {{::e.written}}
+                  </div>
+                  <div ng-if="::e.written == 'JS'" class="shapeblock triangle" style="left:0px; top:100px">
+                    <div></div>
+                  </div>
+                </div>
+
+                <!-- E/A blocks -->
+                <div ng-if="::e.type == 'ea'" class="shape" 
+                  style="width:50px; height:50px;left:{{::e.x}}px;top:{{::e.y}}px" >
+                  <div class="shapeblock borderL borderT borderR borderB" style="left:0px; top:0px">
+                    {{::e.name}}
+                  </div>
+                </div>
+
+                <!-- Comment blocks -->
+                <div ng-if="::e.type == 'comment'" class="shape" style="left:{{::e.x}}px;top:{{::e.y}}px" >
+                  <div class="comment" ng-bind-html="self.toHTML(e.name)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+     </div>
+    </md-content>
+    <md-button ng-if="self.selectedTab == 0" class="md-fab md-primary md-hue-1 addButton" aria-label="new" ng-click="self.createDiagram($event)">
+      <i class="fa fa-plus fa-fw"></i>
+      <md-tooltip md-direction="top"><span translate="TDIAG.CREATENEWDIAGRAM"></span></md-tooltip>
+    </md-button>
+
+
+
+    <div ng-repeat="d in self.openTabs" ng-show="self.selectedTab == $index+1" layout-fill style="max-height: 100%; height:100%; position: absolute; box-sizing: border-box;">
+
+      <!-- Toolbar -->
+      <md-toolbar class="md-primary md-hue-2" layout="row" style="min-height: 48px; height: 48px" layout-align="center center">
+        <span style="padding:10px;font-size:75%;font-weight:500;white-space: nowrap;width:315px" translate="TDIAG.COMPONENTS"></span>
+        <span style="padding:10px;font-size:75%;font-weight:500;" translate="TDIAG.ELEMENT"></span>
+
+        <md-button ng-disabled="d.currentSelected.length != 1 || d.currentSelected[0].type == 'comment' || d.currentSelected[0].preset" aria-label="edit" style="min-width: 3em;margin:0;text-transform:none" ng-click="(d.currentSelected[0].type == 'compiler' || d.currentSelected[0].type == 'interpreter') && d.currentSelected[0].written == 'TDL' ? d.openCompiler(d.currentSelected[0],$event).then(d.refreshDiagram) : d.selectSource(d.currentSelected[0],true,$event).then(d.refreshDiagram)" >
+          <i class="fa fa-fw fa-edit"></i> <span translate="TDIAG.EDITELEMENT"></span>
+        </md-button>
+        <md-button ng-disabled="d.currentSelected.length != 1 || (d.currentSelected[0].type != 'compiler' && d.currentSelected[0].type != 'interpreter') || d.currentSelected[0].dockedBottomLeft"  aria-label="select" style="min-width: 3em;margin:0;text-transform:none" ng-click="d.selectSource(d.currentSelected[0],false,$event).then(d.refreshDiagram)">
+          <i class="fa fa-fw fa-folder-open-o"></i> <span translate="TDIAG.SELECTELEMENT"></span>
+        </md-button>
+        <md-button aria-label="copy" ng-disabled="d.currentSelected.length == 0" style="min-width: 3em;margin:0;text-transform:none" ng-click="d.copyElements(d.currentSelected)">
+          <i class="fa fa-fw fa-copy"></i> <span translate="TDIAG.COPYELEMENTS"></span>
+        </md-button>
+        <md-button aria-label="delete" ng-disabled="d.currentSelected.length == 0" style="min-width: 3em;margin:0;text-transform:none" ng-click="d.deleteElements(d.currentSelected)">
+          <i class="fa fa-fw fa-trash-o"></i> <span translate="TDIAG.DELETEELEMENTS"></span>
+        </md-button>
+        <span style="width:2em"></span>
+        <md-button aria-label="undo" ng-click="d.undo()" ng-disabled="d.historyPointer == 0" style="min-width: 1em;">
+          <i class="fa fa-undo"></i>
+          <md-tooltip direction="top"><span translate="UNDO"></span></md-tooltip>
+        </md-button>
+        <md-button aria-label="redo" ng-click="d.redo()" ng-disabled="d.historyPointer >= d.history.length-1" style="min-width: 1em;">
+          <i class="fa fa-undo fa-flip-horizontal"></i>
+          <md-tooltip direction="top"><span translate="REDO"></span></md-tooltip>
+        </md-button>
+        <span flex></span>
+        <md-button aria-label="run" ng-disabled="d.currentSelected.length == 0 || (d.currentSelected.length == 1 && ((d.currentSelected[0].written != 'JS' && !d.currentSelected[0].dockedBottom)|| (d.currentSelected[0].code == '' && !d.currentSelected[0].preset && !d.currentSelected[0].dockedBottom)))" style="min-width: 3em;margin:0;margin-right:10px;text-transform:none" ng-click="self.runSelectedElements(d,d.currentSelected)"><i class="fa fa-fw fa-play"></i> <span translate="TDIAG.RUN"></span></md-button>
+      </md-toolbar>
+
+      <div style="position:absolute; top:48px;left:0px;right:0px;bottom:0px; overflow:auto" layout="row">
+
+        <!-- Sidebar with building blocks -->
+        <md-sidenav md-is-locked-open="true" ng-attr-component-id="componentSidebar_{{d.ID}}" class="md-sidenav-left md-whiteframe-z2" >
+          <md-content flex layout-fill style="overflow:hidden;padding-top:0px;background:white;">
+
+            <div ng-draggable ng-dragclone="true" class="itemCard" style="width:150px;height:100px"
+              ng-dragmove="d.newElementDragMove('compiler',x,y)" ng-dragend="!d.newElement.dockedBottomLeft ? d.selectSource(d.newElement,false,$event).then(d.refreshDiagram):void();d.newElementDragEnd()">
+              <div class="shapeblock borderL borderT borderB" style="left:0px; top:0px">L-In</div>
+              <div class="shapeblock borderT" style="left:50px; top:0px"><span class="bigArrow">&rarr;</span></div>
+              <div class="shapeblock borderR borderT borderB" style="left:100px; top:0px">L-Out</div>
+              <div class="shapeblock borderL borderR borderB" style="left:50px; top:50px">L</div>
+              <md-tooltip><span translate="TDIAG.COMPONENTCOMPILER"></span></md-tooltip>
+            </div>
+
+            <div ng-draggable ng-dragclone="true" class="itemCard" style="width:50px;height:150px"
+              ng-dragmove="d.newElementDragMove('interpreter',x,y)" ng-dragend="!d.newElement.dockedBottomLeft ? d.selectSource(d.newElement,false,$event).then(d.refreshDiagram):void();d.newElementDragEnd()">
+              <div class="shapeblock borderL borderT borderR" style="left:0px; top:0px">L-In</div>
+              <div class="shapeblock borderR borderL" style="left:0px; top:50px">
+                <span style="font-size:150%;vertical-align:middle">[</span>
+                <i class="fa fa-cog"></i>
+                <span style="font-size:150%;vertical-align:middle">]</span>
+              </div>
+              <div class="shapeblock borderL borderR borderB" style="left:0px; top:100px">L</div>
+              <md-tooltip><span translate="TDIAG.COMPONENTINTERPRETER"></span></md-tooltip>
+            </div>
+
+            <div ng-draggable ng-dragclone="true" class="itemCard" style="width:50px;height:100px"
+              ng-dragmove="d.newElementDragMove('program',x,y)" ng-dragend="!d.newElement.dockedBottomLeft ? d.selectSource(d.newElement,false,$event).then(d.refreshDiagram):void();d.newElementDragEnd()">
+              <div class="shapeblock borderL borderT borderR" style="left:0px; top:0px">P</div>
+              <div class="shapeblock borderL borderR borderB" style="left:0px; top:50px">L</div>
+              <md-tooltip><span translate="TDIAG.COMPONENTPROGRAM"></span></md-tooltip>
+            </div>
+
+            <div ng-draggable ng-dragclone="true" class="itemCard" style="width:50px;height:50px"
+              ng-dragmove="d.newElementDragMove('ea',x,y)" ng-dragend="!d.newElement.dockedLeft ? d.selectSource(d.newElement,false,$event).then(d.refreshDiagram):void();d.newElementDragEnd()">
+              <div class="shapeblock borderL borderT borderR borderB" style="left:0px; top:0px" translate="TDIAG.IOBLOCK"></div>
+              <md-tooltip><span translate="TDIAG.COMPONENTIO"></span></md-tooltip>
+            </div>
+
+            <div ng-draggable ng-dragclone="true" class="shape" style="top:130px; left:10px"
+              ng-dragmove="d.newElementDragMove('comment',x,y)" ng-dragend="d.newElementDragEnd()">
+              <div class="comment">+ <span translate="TDIAG.COMMENT"></span></div>
+            </div>
+
+
+            <div style="clear:both"></div>
+
+            <md-toolbar layout="row" style="min-height: 48px; height: 48px" class="md-primary md-hue-2" layout-align="start center"
+                        ng-show="d.currentSelected.length == 1" >
+              <span style="padding:10px;font-size:75%;font-weight:500" translate="TDIAG.SELECTEDELEMENT"></span>
+            </md-toolbar>
+
+            <div ng-if="d.currentSelected.length == 1" style="background:white; position: absolute; bottom: 0; top: 240px; left:0; right:0; overflow:auto">
+              <div style="padding:16px" ng-if="d.currentSelected.length == 1 && d.currentSelected[0].type == 'compiler'">
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="NAME"></label>
+                    <input ng-model="d.currentSelected[0].name" ng-disabled="d.updateCompiler(d.currentSelected[0]);d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+                </div>
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0"> 
+                    <label translate="TDIAG.INPUTLANGUAGE"></label>
+                    <input ng-model="d.currentSelected[0].input" ng-disabled="d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.updateCompiler(d.currentSelected[0]);d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="TDIAG.OUTPUTLANGUAGE"></label>
+                    <input ng-model="d.currentSelected[0].output" ng-disabled="d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.updateCompiler(d.currentSelected[0]);d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+                </div>
+
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="TDIAG.WRITTENIN"></label>
+                    <input ng-model="d.currentSelected[0].written" ng-disabled="d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.updateCompiler(d.currentSelected[0]);d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+
+                  <md-input-container flex style="margin-bottom:0" ng-if="d.currentSelected[0].written == 'JS'">
+                    <label>
+                      <span translate="TDIAG.RUNABLEON"></span>
+                    </label>
+                  </md-input-container>
+
+                  <md-input-container flex style="margin-bottom:0" ng-if="d.currentSelected[0].written == 'TDL'">
+                    <label>
+                      <span translate="TDIAG.GENERATOR"></span>
+                    </label>
+                    <md-select ng-model="d.currentSelected[0].generator" ng-disabled="d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.updateCompiler(d.currentSelected[0]);d.refreshDiagram(); d.makeUndoStep()">
+                      <md-option value="LALR">LALR(1)</md-option>
+                      <md-option value="LL1">LL(1)</md-option>
+                    </md-select>
+                  </md-input-container>
+                </div>
+                <div layout="row" ng-if="!d.currentSelected[0].preset && d.currentSelected[0].written == 'TDL' && d.currentSelected[0].source != '' && d.currentSelected[0].source.indexOf('local') == -1">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="TDIAG.COMPILERURL"></label>
+                    <input id="compilerURL_{{d.ID}}" value="{{'https://flaci.com/c'+d.currentSelected[0].source+'g'+d.GUID+'.js'}}" readonly="readonly">
+                  </md-input-container>
+                  <md-button style="margin-top:14px" class="md-icon-button" ng-click="self.copyCompilerURLToClipboard('compilerURL_'+d.ID,$event)"><i class="fa fa-copy"></i></md-button>
+                </div>
+
+              </div>
+
+              <div style="padding:16px" ng-if="d.currentSelected.length == 1 && d.currentSelected[0].type == 'interpreter'">
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="NAME"></label>
+                    <input ng-model="d.currentSelected[0].name" ng-disabled="d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.updateCompiler(d.currentSelected[0]);d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+                </div>
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0"> 
+                    <label translate="TDIAG.INPUTLANGUAGE"></label>
+                    <input ng-model="d.currentSelected[0].input" ng-disabled="d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.updateCompiler(d.currentSelected[0]);d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+                </div>
+
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="TDIAG.WRITTENIN"></label>
+                    <input ng-model="d.currentSelected[0].written" ng-disabled="d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.updateCompiler(d.currentSelected[0]);d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+
+                  <md-input-container flex style="margin-bottom:0" ng-if="d.currentSelected[0].written == 'JS'">
+                    <label>
+                      <span translate="TDIAG.RUNABLEON"></span>
+                    </label>
+                  </md-input-container>
+
+                  <md-input-container flex style="margin-bottom:0" ng-if="d.currentSelected[0].written == 'TDL'">
+                    <label>
+                      <span translate="TDIAG.GENERATOR"></span>
+                    </label>
+                    <md-select ng-model="d.currentSelected[0].generator" ng-disabled="d.currentSelected[0].preset || d.currentSelected[0].dockedBottomLeft" ng-change="d.updateCompiler(d.currentSelected[0]);d.refreshDiagram(); d.makeUndoStep()">
+                      <md-option value="LALR">LALR(1)</md-option>
+                      <md-option value="LL1">LL(1)</md-option>
+                    </md-select>
+                  </md-input-container>
+
+                </div>
+                <div layout="row" ng-if="!d.currentSelected[0].preset && d.currentSelected[0].written == 'TDL' && d.currentSelected[0].source != '' && d.currentSelected[0].source.indexOf('local') == -1">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="TDIAG.COMPILERURL"></label>
+                    <input id="compilerURL_{{d.ID}}" value="{{'https://flaci.com/c'+d.currentSelected[0].source+'g'+d.GUID+'.js'}}" readonly="readonly">
+                  </md-input-container>
+                  <md-button style="margin-top:14px" class="md-icon-button" ng-click="self.copyCompilerURLToClipboard('compilerURL_'+d.ID,$event)"><i class="fa fa-copy"></i></md-button>
+                </div>
+              </div>
+
+              <div style="padding:16px" ng-if="d.currentSelected.length == 1 && d.currentSelected[0].type == 'program'">
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="NAME"></label>
+                    <input ng-model="d.currentSelected[0].name" ng-change="d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }"> 
+                  </md-input-container>
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="TDIAG.WRITTENIN"></label>
+                    <input ng-model="d.currentSelected[0].written" ng-change="d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+                </div>
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label translate="TDIAG.FROMURL"></label>
+                    <input ng-model="d.currentSelected[0].fromURL" ng-change="d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                  </md-input-container>
+                </div>
+                <div layout="row">
+                  <md-input-container flex style="margin-bottom:0">
+                    <label>
+                      <span ng-if="d.currentSelected[0].written != 'JS'" translate="TDIAG.NOTRUNABLE"></span>
+                      <span ng-if="d.currentSelected[0].written == 'JS'" translate="TDIAG.RUNABLEON"></span>
+                    </label>
+                  </md-input-container>
+                </div>
+              </div>
+              <div style="padding:16px" ng-if="d.currentSelected.length == 1 && d.currentSelected[0].type == 'ea'">
+                <md-input-container>
+                  <label translate="NAME"></label>
+                  <input ng-model="d.currentSelected[0].name" ng-change="d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }">
+                </md-input-container>
+              </div>
+              <div style="padding:16px" ng-if="d.currentSelected.length == 1 && d.currentSelected[0].type == 'comment'">
+                <md-input-container style="width:100%">
+                  <label translate="TDIAG.COMMENT"></label>
+                  <textarea ng-model="d.currentSelected[0].name" ng-change="d.refreshDiagram(); d.makeUndoStep()" ng-model-options="{ debounce: 500 }"></textarea>
+                </md-input-container>
+              </div>
+            </div>
+          </md-content>
+        </md-sidenav>
+
+        <!-- Main diagram area -->
+
+        <md-content id="editor_{{d.ID}}" flex layout="column" class="noselect" layout-fill 
+          style="overflow:auto;" ng-click="d.unselectElement(); d.isComponentSidebarOpen = false">
+          <div ng-repeat="e in d.elements" ng-class="{hoverElement : d.isSelected(e)}" ng-repeat-complete="d.refreshDiagram()">
+
+            <!-- Compiler blocks -->
+            <div ng-if="e.type == 'compiler'" id="d{{d.ID+'_'+e.id}}" class="shape {{d.isCodeDefined(e) ? '':'undef'}}" 
+              ng-style="{'width':'150px','height':e.written == 'JS' ? '150px':'100px','left':e.x+'px','top':e.y+'px'}" 
+              ng-click="$event.stopPropagation()"
+              ng-dragstart="d.elementDragStart(e,x,y,$event)" 
+              ng-dragmove="d.elementDragMove(e,x,y,$event)"
+              ng-dragend="d.elementDragEnd(e,x,y,$event)"
+              ng-draggable>
+              <div class="shapeblock borderL borderT borderB" style="left:0px; top:0px">
+                {{e.input}}
+                <div ng-if="e.dockedLeft" class="dockedLeft"></div>
+              </div>
+
+              <div class="shapeblock borderT" style="left:50px; top:0px">
+                 <span class="bigArrow">&rarr;</span>
+              </div>
+
+              <div class="shapeblock borderR borderT borderB" style="left:100px; top:0px">
+                {{e.output}}
+                <div ng-if="e.dockedRight" class="dockedRight"></div>
+              </div>
+              <div class="shapeblock borderL borderR borderB" style="left:50px; top:50px">
+                {{e.written}}
+                <div ng-if="e.dockedBottomRight" class="dockedRight"></div>
+                <div ng-if="e.dockedBottomLeft" class="dockedLeft"></div>
+                <div ng-if="e.dockedBottom" class="dockedBottom"></div>
+              </div>
+              <div ng-if="e.written == 'JS'" class="shapeblock triangle" style="left:50px; top:100px">
+                <div></div>
+              </div>
+            </div>
+
+            <!-- Interpreter blocks -->
+            <div ng-if="e.type == 'interpreter'" id="d{{d.ID+'_'+e.id}}" class="shape {{d.isCodeDefined(e) ? '':'undef'}}" 
+              ng-style="{'width':'50px','height':e.written == 'JS' ? '200px':'150px','left':e.x+'px','top':e.y+'px'}" 
+              ng-click="$event.stopPropagation()"
+              ng-dragstart="d.elementDragStart(e,x,y,$event)" 
+              ng-dragmove="d.elementDragMove(e,x,y,$event)"
+              ng-dragend="d.elementDragEnd(e,x,y,$event)"
+              ng-draggable>
+              <div class="shapeblock borderL borderT borderR" style="left:0px; top:0px">
+                {{e.input}}
+                <div ng-if="e.dockedTop" class="dockedTop"></div>
+              </div>
+
+              <div class="shapeblock borderL borderR" style="left:0px; top:50px">
+                <span style="font-size:150%;vertical-align:middle">[</span>
+                <i class="fa fa-cog"></i>
+                <span style="font-size:150%;vertical-align:middle">]</span>
+              </div>
+
+              <div class="shapeblock borderL borderR borderB" style="left:0px; top:100px">
+                {{e.written}}
+                <div ng-if="e.dockedBottomRight" class="dockedRight"></div>
+                <div ng-if="e.dockedBottomLeft" class="dockedLeft"></div>
+                <div ng-if="e.dockedBottom" class="dockedBottom"></div>
+              </div>
+              <div ng-if="e.written == 'JS'" class="shapeblock triangle" style="left:0px; top:150px">
+                <div></div>
+              </div>
+            </div>
+
+            <!-- Program blocks -->
+            <div ng-if="e.type == 'program'" id="d{{d.ID+'_'+e.id}}" class="shape {{d.isCodeDefined(e) ? '':'undef'}}" 
+              ng-style="{'width':'50px','height':e.written == 'JS' ? '150px':'100px','left':e.x+'px','top':e.y+'px'}" 
+              ng-click="$event.stopPropagation()"
+              ng-dragstart="d.elementDragStart(e,x,y,$event)" 
+              ng-dragmove="d.elementDragMove(e,x,y,$event)"
+              ng-dragend="d.elementDragEnd(e,x,y,$event)"
+              ng-draggable >
+              <div class="shapeblock borderL borderT borderR" style="left:0px; top:0px">
+                {{e.name}}
+                <div ng-if="e.dockedRight" class="dockedRight"></div>
+                <div ng-if="e.dockedLeft" class="dockedLeft"></div>
+              </div>
+              <div class="shapeblock borderL borderR borderB" style="left:0px; top:50px">
+                {{e.written}}
+                <div ng-if="e.dockedBottomRight" class="dockedRight"></div>
+                <div ng-if="e.dockedBottomLeft" class="dockedLeft"></div>
+                <div ng-if="e.dockedBottom" class="dockedBottom"></div>
+              </div>
+              <div ng-if="e.written == 'JS'" class="shapeblock triangle" style="left:0px; top:100px">
+                <div></div>
+              </div>
+            </div>
+
+            <!-- E/A blocks -->
+            <div ng-if="e.type == 'ea'" id="d{{d.ID+'_'+e.id}}" class="shape {{d.isCodeDefined(e) ? '':'undef'}}" 
+              ng-style="{'width':'50px','height':'50px','left':e.x+'px','top':e.y+'px'}" 
+              ng-click="$event.stopPropagation()"
+              ng-dragstart="d.elementDragStart(e,x,y,$event)" 
+              ng-dragmove="d.elementDragMove(e,x,y,$event)"
+              ng-dragend="d.elementDragEnd(e,x,y,$event)"
+              ng-draggable >
+              <div class="shapeblock borderL borderT borderR borderB" style="left:0px; top:0px">
+                {{e.name}}
+                <div ng-if="e.dockedRight" class="dockedRight"></div>
+                <div ng-if="e.dockedLeft" class="dockedLeft"></div>
+              </div>
+            </div>
+
+            <!-- Comment blocks -->
+            <div ng-if="e.type == 'comment'" id="d{{d.ID+'_'+e.id}}" class="shape" 
+              ng-style="{'left':e.x+'px','top':e.y+'px'}" 
+              ng-click="$event.stopPropagation()"
+              ng-dragstart="d.elementDragStart(e,x,y,$event)" 
+              ng-dragmove="d.elementDragMove(e,x,y,$event)"
+              ng-dragend="d.elementDragEnd(e,x,y,$event)"
+              ng-draggable >
+              <div class="comment" ng-bind-html="self.toHTML(e.name)"></div>
+            </div>
+          </div>
+        </md-content>
+
+        <!-- Sidebar with output logging -->
+
+        <md-sidenav style="min-width:{{self.logPanelSize*15+33}}%;max-width:{{self.logPanelSize*15+33}}%" ng-show="d.isLogSidebarOpen" md-is-locked-open="true" class="md-sidenav-left md-whiteframe-z2">
+          <md-content layout="column" flex layout-fill layout-padding style="background:white;">
+            <md-switch style="position: absolute;top: -5px;right: 25px;" ng-model="d.showLogAsHTML" aria-label="als HTML">
+              <span translate="TDIAG.SHOWASHTML"></span>
+            </md-switch>
+            <md-button class="toolbarButton" style="position:absolute;right:0;top:0p;padding:0px" aria-label="close" ng-click="d.isLogSidebarOpen = false"><i class="fa fa-fw fa-times"></i></md-button>
+            <div style="margin-left: -4px;">
+              <md-button ng-if="self.logPanelSize < 2" class="toolbarButton" style="padding:0px" ng-click="self.changeLogPanelSize(1)" aria-label="enlarge"><i class="fa fa-fw fa-caret-square-o-left"></i></md-button>
+              <md-button ng-if="self.logPanelSize > 0" class="toolbarButton" style="padding:0px" ng-click="self.changeLogPanelSize(-1)" aria-label="shrink"><i class="fa fa-fw fa-caret-square-o-right"></i></md-button>
+              <span translate="TDIAG.OUTPUT"></span>
+            </div>
+            <md-divider></md-divider>
+
+            <div ng-if="d.showLogAsHTML" scroll-bottom="d.runLog" flex layout-fill layout-padding ng-bind-html="self.$sce.trustAsHtml(d.runLog)"
+                 style="width:100%;box-sizing: border-box;border:1px solid #999;background:white;overflow:auto;margin-top:10px;white-space:pre-wrap;overflow:auto;font-family:monospace;line-height:1em;" ></div>
+
+            <textarea ng-if="!d.showLogAsHTML" scroll-bottom="d.runLog" flex layout-fill style="font-family:monospace;line-height:1em;backgrond:white;margin-top:10px;padding: 10px;box-sizing: border-box;" readonly ng-model="d.runLog"></textarea>
+          </md-content>
+        </md-sidenav>
+
+      </div>
+
+
+    </div>
+  </div>
+</div>

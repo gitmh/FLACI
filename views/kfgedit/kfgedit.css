@@ -1,0 +1,221 @@
+body > div > div > md-tabs > md-tabs-wrapper{
+  padding-right: 100px;
+}
+.kfgeditTabs {
+  position: absolute; 
+  left:0px;
+  width:100%;
+  top: 0px;
+  bottom: 0px;
+}
+
+.kfgeditTabs > md-tabs-content-wrapper { 
+  position: absolute;
+  bottom: 0px;
+  top: 48px;
+}
+
+.as-sortable-placeholder { 
+  display:inline-block;
+  box-sizing:border-box;
+  vertical-align:top;
+}
+.as-sortable-placeholder { 
+  background:transparent;
+  border:4px dotted #ccc;
+}
+.as-sortable-drag .parserRule {
+  margin:0px !important;
+}
+
+.toolbarButton {
+  margin: 0px;
+  min-width:2em;
+}
+
+.grammarHintPanel{
+  left:0px;
+  bottom:0px;
+  height:180px;
+  position:absolute;
+  width:100%;
+  overflow:auto;
+}
+
+.derivationListView {
+  font-family:Arial;
+  font-size:small;
+  position:relative;
+  background:#fff;
+  box-sizing:border-box;
+  padding:5px;
+  overflow:auto;
+}
+.derivationTreeViewWrapper {
+  position:absolute;
+  top:84px;
+  bottom:0px;
+  left:0px;
+  right:0px;
+  background:#fff;
+}
+.derivationTreeView {
+  background:#fff;
+  font-family:Arial;
+  font-size:small;
+  position:absolute;
+  overflow:auto;
+  top:0px;
+  bottom:0px;
+  left:0px;
+  right:0px;
+}
+.derivationTreeView.zoom25 {
+  transform:scale(0.25);
+  transform-origin: top left;
+  width:400%;
+  height:400%;
+}
+.derivationTreeView.zoom50 {
+  transform:scale(0.5);
+  transform-origin: top left;
+  width:200%;
+  height:200%;
+}
+.derivationTreeView.zoom75 {
+  transform:scale(0.75);
+  transform-origin: top left;
+  width:133%;
+  height:133%;
+}
+.derivationTreeView.zoom125 {
+  transform:scale(1.25);
+  transform-origin: top left;
+  width:80%;
+  height:80%;
+}
+.derivationTreeView.zoom150 {
+  transform:scale(1.5);
+  transform-origin: top left;
+  width:66.66%;
+  height:66.66%;
+}
+.derivationTreeViewZoomButtons {
+  position:absolute;
+  bottom:10px;
+  right:10px;
+}
+
+.derivationList {
+  display:table;
+  width:100%;
+}
+.derivationListHeader {
+  display:table-row;
+}
+.derivationListRow {
+  display:table-row;
+}
+.derivationListEntry {
+  display:table-cell;
+  vertical-align:top;
+  padding:5px;
+  border-bottom:1px solid gray;
+  line-height:22px;
+}
+.derivationListEntry span.t {
+  color:black;
+  border:1px solid #999;
+  padding:2px;
+  background:#f3f3f3;
+}
+.derivationListEntry span.nt {
+  color:red;
+}
+
+.derivationTreeView .Node {
+  position:absolute;
+  text-align:center;
+  vertical-align:middle;
+  overflow:hidden;
+  line-height:20px;
+  margin-bottom:30px;
+}
+.derivationTreeView .Node > div {
+  padding-left:2px;
+}
+
+.derivationTreeView .Node.t {
+  padding-top:1px;
+}
+.derivationTreeView .Node.invisible {
+  opacity:0;
+}
+
+
+.derivationTreeView .Node.t > .NodeContent > span {
+  background: #FDFFC7;
+  padding:2px;
+  padding-left: 3px;
+  padding-right: 3px;
+  border: 1px solid black;
+
+  color:black;
+  border:1px solid #999;
+  background:#f3f3f3;
+}
+
+.derivationTreeView .Node.nt {
+  color:#f50;
+}
+
+.derivationTreeView .Node.nt > .NodeContent > span {
+  background: #FFF0F0;
+  border-radius: 0px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border: 1px solid black;
+}
+
+
+.derivationTreeView .NodeCollapsed {
+  position:absolute;
+  background-color: #8FADFF;
+  border: 2px solid black;
+  text-align:center;
+  vertical-align:middle;
+  cursor:pointer;
+  overflow:hidden;
+}
+
+
+.derivationTreeView .NodeLine {
+  background-color: #000066;
+  position:absolute; 
+  overflow:hidden;
+}
+
+.grammarInputEditor .CodeMirror-lines {
+  line-height:26px;
+}
+.grammarInputEditor .cm-string {
+  color:black;
+/*
+  border:1px solid #999;
+  padding:2px;
+  background:#f3f3f3;
+*/
+}
+.grammarInputEditor .cm-string-2 {
+}
+.grammarInputEditor .cm-arrow {
+
+}
+
+md-pagination-wrapper {
+    width:auto !important;
+}
+md-tab-item {
+    max-width:100% !important;
+}
+

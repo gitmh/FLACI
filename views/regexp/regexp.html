@@ -1,0 +1,361 @@
+<div ng-controller="RegExpController as self">  
+  <md-toolbar layout="row" layout-align="center center" style="height:64px">
+    <ng-include src="'appmenu.html'"></ng-include>
+    <span flex translate="MODULEREGEXPEDIT"></span>
+    <span flex></span>
+    <ng-include src="'languageselect.html'"></ng-include>
+    &nbsp;
+  </md-toolbar>
+
+  <md-tabs md-stretch-tabs="auto" class="mainTabs" md-border-bottom  md-selected="self.selectedTab" md-no-swipe>
+    <md-tab>
+      <md-tab-label><span translate="REGEXPEDIT.DEFINITION"></span></md-tab-label>
+      <md-tab-body>
+        <md-content layout-fill class="selectable" style="max-height: 100%;  height: 100%; overflow:auto; padding:10px; position: absolute; box-sizing: border-box;">
+          <div style="max-width: 970px;">
+          <md-card layout-padding style="background:white">
+            <p style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-info fa-fw"></i>  
+              <span translate="REGEXPEDIT.DEFREGEXP"></span>
+            </p>
+          </md-card>
+          <div layout-padding style="margin:8px">
+           <span translate="REGEXPEDIT.INTRODUCTION"></span>
+          </div>
+          <md-card layout-padding style="background:white">
+            <p style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-lightbulb-o fa-fw"></i>
+              <span translate="REGEXPEDIT.DEFSINGLECHARS"></span>
+            </p>
+          </md-card>
+          <div layout-padding style="margin:8px">
+           <span translate="REGEXPEDIT.EXAMPLES.TEXT1"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp1" ng-trim="false" ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp1, self.sampleText1, 'text1')">
+              </md-input-container>         
+              <div id="text1_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text1" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text1_grammar"></div>
+
+
+          <md-card layout-padding style="background:white">
+            <p style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-lightbulb-o fa-fw"></i>
+              <span translate="REGEXPEDIT.DEFALTERNATIVE"></span>
+            </p>
+          </md-card>
+
+          <div layout-padding style="margin:8px">
+           <span translate="REGEXPEDIT.EXAMPLES.TEXT2"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp2" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp2, self.sampleText2, 'text2')">
+              </md-input-container>         
+              <div id="text2_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text2" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text2_grammar"></div>
+
+          <md-card layout-padding style="background:white">
+            <p style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-lightbulb-o fa-fw"></i>
+              <span translate="REGEXPEDIT.DEFOPTIONAL"></span>
+            </p>
+          </md-card>
+
+          <div layout-padding style="margin:8px">
+            <span translate="REGEXPEDIT.EXAMPLES.TEXT3"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp3" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp3, self.sampleText3, 'text3')">
+              </md-input-container>         
+              <div id="text3_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text3" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text3_grammar"></div>
+
+          <md-card layout-padding style="background:white">
+            <p style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-lightbulb-o fa-fw"></i>
+              <span translate="REGEXPEDIT.DEFSTAR"></span>
+            </p>
+          </md-card>
+
+          <div layout-padding style="margin:8px">
+            <span translate="REGEXPEDIT.EXAMPLES.TEXT4"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp4" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp4, self.sampleText4, 'text4')">
+              </md-input-container>         
+              <div id="text4_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text4" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text4_grammar"></div>
+
+          <md-card layout-padding style="background:white">
+            <p style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-lightbulb-o fa-fw"></i>
+              <span translate="REGEXPEDIT.DEFCLASSES"></span>
+            </p>
+          </md-card>
+
+          <div layout-padding style="margin:8px">
+            <span translate="REGEXPEDIT.EXAMPLES.TEXT5"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp5" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp5, self.sampleText5, 'text5')">
+              </md-input-container>         
+              <div id="text5_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text5" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text5_grammar"></div>
+
+          <md-card layout-padding style="background:white">
+            <p style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-lightbulb-o fa-fw"></i>
+              <span translate="REGEXPEDIT.DEFCLASSRANGE"></span>
+            </p>
+          </md-card>
+
+          <div layout-padding style="margin:8px">
+            <span translate="REGEXPEDIT.EXAMPLES.TEXT6"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp6" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp6, self.sampleText6, 'text6')">
+              </md-input-container>         
+              <div id="text6_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text6" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text6_grammar"></div>
+
+          <md-card layout-padding style="background:white">
+            <p style="padding-left:2em"><i style="position:absolute;margin-left:-1.5em;" class="fa fa-lightbulb-o fa-fw"></i>
+              <span translate="REGEXPEDIT.DEFSPECIALCHARS"></span>
+            </p>
+          </md-card>
+
+          <div layout-padding style="margin:8px">
+            <span translate="REGEXPEDIT.EXAMPLES.TASK1"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp7" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp7, self.sampleText7, 'text7')">
+              </md-input-container>         
+              <div id="text7_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text7" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text7_grammar"></div>
+
+          <div layout-padding style="margin:8px">
+            <span translate="REGEXPEDIT.EXAMPLES.TASK2"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp8" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp8, self.sampleText8, 'text8')">
+              </md-input-container>         
+              <div id="text8_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text8" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text8_grammar"></div>
+
+          <div layout-padding style="margin:8px">
+            <span translate="REGEXPEDIT.EXAMPLES.TASK3"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp9" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp9, self.sampleText9, 'text9')">
+              </md-input-container>         
+              <div id="text9_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text9" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text9_grammar"></div>
+
+          <div layout-padding style="margin:8px">
+            <span translate="REGEXPEDIT.EXAMPLES.TASK4"></span>  
+          </div>
+
+          <div layout-padding style="margin:8px" layout="row">
+            <div flex style="padding-right:10px">
+              <md-input-container layout-fill>
+                <label><span translate="REGEXPEDIT.REGEXP"></span></label>
+                <input ng-model="self.regExp10" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.regExp10, self.sampleText10, 'text10')">
+              </md-input-container>         
+              <div id="text10_error" class="errorRegExp"></div>
+            </div>
+            <div flex style="padding-left:10px;margin-top:-12px">
+              <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" translate="REGEXPEDIT.SEARCHTEXT"></div>
+              <div id="text10" class="inputText"></div>
+            </div>
+          </div>
+          <div layout-padding class="grammar selectable" id="text10_grammar"></div>
+          </div>
+        </md-content>
+      </md-tab-body>
+    </md-tab>
+    <md-tab>
+      <md-tab-label><span translate="REGEXPEDIT.EXPERIMENT"></span></md-tab-label>
+      <md-tab-body>
+        <md-content layout="row" layout-fill style="max-height: 100%;  height: 100%; overflow:auto; position: absolute; box-sizing: border-box;">
+          <div flex style="padding:10px;overflow:auto;">
+            <div layout-padding style="margin:8px" layout="row">
+              <div flex style="padding-right:10px" layout="column">
+                <md-input-container style="margin-bottom:0; padding-right: 2em;">
+                  <label><span translate="REGEXPEDIT.REGEXPFORL"></span></label>
+                  <input type="text" ng-model="self.testRegExp" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.testRegExp, self.testInput, 'test');self.doCompare ? self.applyRegExp(self.testRegExp2, self.testInput, 'test2') : void(0)">
+                  <md-button ng-if="self.doCompare" style="position:absolute;right:-0.5em;top:0;margin:0;min-width:1em;width:3em" ng-click="self.switchTestRegExp()" aria-label="switch"><i class="fa fa-fw fa-arrows-v"></i></md-button>
+                </md-input-container>         
+                <div id="test_error" class="errorRegExp" style="position:relative;"></div>
+                
+                <md-button ng-if="!self.doCompare" aria-label="compare" class="md-primary" ng-click="self.setDoCompare(true)">
+                  <span translate="REGEXPEDIT.COMPAREREGEXP"></span>
+                </md-button>
+                <md-input-container style="margin-bottom:0; padding-right: 2em;" ng-if="self.doCompare">
+                  <label><span translate="REGEXPEDIT.REGEXP2"></span></label>
+                  <input ng-model="self.testRegExp2" ng-trim="false"  ng-model-options="{ debounce: 500 }" ng-change="self.applyRegExp(self.testRegExp2, self.testInput, 'test2');">
+                  <md-button style="position:absolute;right:-0.5em;top:0;margin:0;min-width:1em;width:3em" ng-click="self.setDoCompare(false)" aria-label="delete"><i class="fa fa-fw fa-times"></i></md-button>
+                </md-input-container>         
+                <div ng-if="self.doCompare" id="test2_error" class="errorRegExp" style="position:relative;"></div>
+                <div ng-if="self.doCompare && self.isEqualRegExp" class="errorRegExp" style="position:relative;color:green;margin:0;padding-left:1em" translate="REGEXPEDIT.EQUALREGEXP"></div>
+                <div ng-if="self.doCompare && !self.isEqualRegExp" class="errorRegExp" style="position:relative;color:red;margin:0;padding-left:1em" translate="REGEXPEDIT.NOTEQUALREGEXP"></div>
+
+              </div>
+              <div flex style="padding-left:10px;;margin-top:-12px">
+                <div style="color:rgba(0,0,0,0.54);font-size:75%;margin-bottom:10px" layout="row"><span flex translate="REGEXPEDIT.SEARCHTEXT"></span> <md-button ng-disabled="!self.validTestRegExp" ng-click="self.generateRandomTestWord()" class="md-primary" style="margin:0;font-size:10px;line-height:1em;padding:0;min-height:10px"><i class="fa fa-fw fa-magic" style="font-size:10px;"></i> <span translate="REGEXPEDIT.RANDOMWORDS"></span></md-button> </div>
+                <div style="position:relative;height: 100px;">
+                <textarea ui-codemirror="{lineWrapping:true, lineNumbers: true,theme:'default',mode: 'regexpedit', onLoad : self.codemirrorLoaded }" ng-model="self.testInput"/>
+                </div>
+              </div>
+            </div>
+            <div layout-padding style="margin:8px">
+              <div class="grammar selectable" style="margin-left:5px" id="test_grammar"></div>
+              <div>
+                <md-button ng-disabled="!self.validTestRegExp" ng-click="self.saveAsNEA()" class="md-primary md-raised"><i class="fa fa-fw fa-save"></i> <span translate="REGEXPEDIT.SAVEASNEA"></span></md-button> 
+                <md-button ng-disabled="!self.validTestRegExp" ng-click="self.saveAsGammar()" class="md-primary md-raised"><i class="fa fa-fw fa-save"></i> <span translate="REGEXPEDIT.SAVEASGRAMMAR"></span></md-button> 
+                <md-button ng-disabled="!self.validTestRegExp" ng-click="self.saveAsREGammar()" class="md-primary md-raised"><i class="fa fa-fw fa-save"></i> <span translate="REGEXPEDIT.SAVEASREGRAMMAR"></span></md-button> 
+
+              </div>
+            </div>
+          </div>   
+          <!-- Sidebar with building blocks -->
+          <md-sidenav ng-show="self.$mdMedia('gt-sm') || self.isReferenceSidebarOpen" md-is-locked-open="true" class="md-sidenav-right md-whiteframe-z2" style="background:white">
+            <div style="padding:10px;font-weight:bold;font-size:120%" translate="REGEXPEDIT.REFERENCE.TITLE"></div>
+            <md-list layout-fill>
+              <md-divider></md-divider>
+              <md-list-item><p style="font-weight:bold" class="selectable">a</p><p translate="REGEXPEDIT.REFERENCE.R1"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">abc</p><p translate="REGEXPEDIT.REFERENCE.R2"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">(x|y)</p><p translate="REGEXPEDIT.REFERENCE.R3"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">[abc]</p><p translate="REGEXPEDIT.REFERENCE.R4"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">[^abc]</p><p translate="REGEXPEDIT.REFERENCE.R5"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">[0-9]</p><p translate="REGEXPEDIT.REFERENCE.R6"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">[^0-9]</p><p translate="REGEXPEDIT.REFERENCE.R7"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">n+</p><p translate="REGEXPEDIT.REFERENCE.R8"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">n*</p><p translate="REGEXPEDIT.REFERENCE.R9"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">n{2,4}</p><p translate="REGEXPEDIT.REFERENCE.R22"></p><md-divider></md-divider>
+              </md-list-item> 
+
+              <md-list-item><p style="font-weight:bold" class="selectable">n?</p><p translate="REGEXPEDIT.REFERENCE.R10"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">.</p><p translate="REGEXPEDIT.REFERENCE.R11"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\[</p><p translate="REGEXPEDIT.REFERENCE.R12"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\w</p><p translate="REGEXPEDIT.REFERENCE.R13"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\W</p><p translate="REGEXPEDIT.REFERENCE.R14"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\d</p><p translate="REGEXPEDIT.REFERENCE.R15"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\D</p><p translate="REGEXPEDIT.REFERENCE.R16"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\s</p><p translate="REGEXPEDIT.REFERENCE.R17"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\S</p><p translate="REGEXPEDIT.REFERENCE.R18"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\n</p><p translate="REGEXPEDIT.REFERENCE.R19"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\r</p><p translate="REGEXPEDIT.REFERENCE.R20"></p><md-divider></md-divider>
+              </md-list-item> 
+              <md-list-item><p style="font-weight:bold" class="selectable">\t</p><p translate="REGEXPEDIT.REFERENCE.R21"></p><md-divider></md-divider>
+              </md-list-item> 
+
+             </md-list>
+          </md-sidenav>
+        </md-content>
+      </md-tab-body>
+    </md-tab>
+
+  </md-tabs>
+</div>

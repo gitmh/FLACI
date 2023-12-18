@@ -1,0 +1,24 @@
+<form ng-submit="hide()">
+<md-dialog style="width:300px;max-width:300px;padding:20px">
+  <md-content> 
+    <h3 translate="LOGIN"></h3> 
+    <md-input-container style="width:100%;margin:0;"> 
+      <label translate="EMAIL"></label> 
+      <input required ng-model="email" type="email" class="dialog-close"></input> 
+    </md-input-container> 
+    <md-input-container style="padding-bottom:0;width:100%;margin:0;"> 
+      <label translate="PASSWORD"></label> 
+      <input required ng-model="pass" type="password"></input> 
+    </md-input-container> 
+    <div style="text-align:center;margin-top:-20px">
+     <md-button ng-click="forgot($event)" style="text-transform:none"><span translate="FORGOTPASSWORD"></span></md-button>
+    </div>
+
+    <div style="color:red;text-align:center" translate="{{error}}"></div>
+  </md-content> 
+  <md-button type="button" style="position:absolute;left:10px;bottom:20px" ng-click="register($event)" translate="REGISTERNEW"></md-button> 
+  <div class="md-actions"> 
+    <md-button class="md-primary" type="submit" translate="LOGIN"></md-button> 
+  </div>
+</md-dialog>
+</form>

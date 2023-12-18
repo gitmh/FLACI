@@ -1,0 +1,17 @@
+<md-dialog style="width:300px;max-width:300px;padding:20px">
+  <md-content> 
+    <h3 translate="WEBLINK"></h3> 
+    <md-input-container layout-fill> 
+      <input id="weblink" required ng-model="weblink" type="text"></input> 
+    </md-input-container> 
+
+  </md-content> 
+  <div class="md-actions"> 
+    <md-button data-clipboard-target="#weblink" id="weblinkCopyBtn" type="button" translate="COPYTOCLIPBOARD"></md-button> 
+  </div>
+</md-dialog>
+
+<script>
+new Clipboard('#weblinkCopyBtn');
+</script>
+

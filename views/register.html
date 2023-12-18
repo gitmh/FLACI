@@ -1,0 +1,37 @@
+<form ng-submit="hide()">
+<md-dialog style="padding:20px">
+  <md-content> 
+    <h3 translate="REGISTERNEW"></h3>
+    <div layout="column" > 
+    <md-input-container style="padding-bottom:0px;width:100%;margin:0;"> 
+      <label translate="NAME"></label> 
+      <input required name="name" ng-model="name" type="text"></input> 
+    </md-input-container> 
+    <md-input-container style="width:100%;margin:0;"> 
+      <label translate="SURNAME"></label> 
+      <input required name="surname" ng-model="surname" type="text"></input> 
+    </md-input-container> 
+    </div>
+
+    <md-input-container style="width:100%;margin:0;"> 
+      <label translate="EMAIL"></label> 
+      <input required name="email" ng-model="email" type="email"></input> 
+    </md-input-container> 
+  
+    <md-input-container style="padding-bottom:0px;width:100%;margin:0;"> 
+      <label translate="PASSWORD"></label> 
+      <input required name="pass" ng-model="pass" type="password"></input> 
+    </md-input-container> 
+    <md-input-container style="width:100%;margin:0;"> 
+      <label translate="PASSWORDREPEAT"></label> 
+      <input required name="pass2" ng-model="pass2" type="password"></input> 
+    </md-input-container> 
+
+    <div style="color:red;text-align:center">{{error}}</div>
+  </md-content> 
+  <div class="md-actions"> 
+    <md-button type="button" ng-click="cancel()" translate="CANCEL"></md-button> 
+    <md-button class="md-primary" type="submit" translate="REGISTER"></md-button> 
+  </div>
+</md-dialog>
+</form>

@@ -1,0 +1,67 @@
+<md-dialog style="padding:20px;width:80%;height:80%">
+  <md-button style="position: absolute;z-index:2;right: 0px;top: 0px;min-width: 2em;margin:0" aria-label="close" ng-click="cancel()"><i class="fa fa-fw fa-times"></i></md-button>
+  <md-content layout-fill> 
+    <h3 style="margin:0px" translate="PUBLICCOLLECTION"></h3>
+
+    <div layout="row" style="position:absolute;left:0;right:0;top:30px;bottom:0px;padding:8px">
+      <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-locked-open="true">
+        <md-content>
+          <md-list>
+            <md-list-item ng-repeat="f in folders | orderBy:'Name' track by f.ID" ng-class="{'active':f.open}" ng-click="openFolder(f)">{{f.Name}}</md-list-item>
+          </md-list>
+        </md-content>
+      </md-sidenav>
+
+      <md-content layout-fill style="overflow-y:auto">
+          <div ng-repeat="g in items | orderBy:'Name' track by g.ID" class="flaciItemCard md-whiteframe-z2" layout-padding>
+            <div layout-padding layout="column" layout-align-gt-sm="row" layout-align="space-between center">
+              <div style="width:100%;padding:0">
+                <big><b>{{g.Name}}</b></big> 
+              </div>
+              <div ng-if="g.Description && g.Description != ''" style="position:absolute;z-index:2;background:white;padding:16px;left:0;bottom:0;width:100%;">{{::g.Description}}</div>
+              <div style="width:100%;height:180px;position:relative; overflow:hidden;margin-top:10px;margin-bottom:0px;background:#eee;cursor:pointer" ng-click="duplicate(g)">
+                <div class="parserRules" style="bottom:auto;position:relative;top:-50%;left:-50%;bottom:auto;overflow:hidden;transform:scale(0.5);width:200%;height:200%;pointer-events:none">
+                  <div class="parserRuleElements">
+                    <div class="parserRule" ng-repeat="(rIndex, rule) in ::g.grammar.bnf track by $index">
+                      <div class="parserRuleInner">
+                        <div style="position:absolute;top:0px;width:100%;height:10px"></div>
+                        <div class="parserRuleName">{{::rule.name}}</div>
+                        <div class="parserRuleRightHandSides">
+                          <div class="parserRuleRightHandSide" ng-class="::{'first':$first}" ng-repeat="(rhsIndex, rhs) in ::rule.rhs track by $index">
+                            <div class="parserRuleStartArrow" ng-if="::$first"></div>
+                            <div class="parserRuleStartLineArrow" ng-if="::!$first"><div></div></div>
+                            <div class="parserRuleRightHandSideInner">
+                              <div class="parserRuleRightHandSideElements" ng-class="::{'empty':rhs[0].length == 0}">
+                                <div class="parserRuleRightHandSideStartArrow"></div>
+                                <div class="parserRuleRightHandSideElement" style="position:relative" ng-repeat="(eIndex,e) in ::rhs[0] track by $index" 
+                                     ng-class="::{'last':$last}">
+                                  <div ng-if="::e.type == 't'" class="parserRuleTerminalElement"> {{::e.name}}
+                                    <div class="parserRuleElementArrow"></div>
+                                  </div>
+                                  <div ng-if="::e.type == 'nt'" class="parserRuleNoneTerminalElement"> {{::e.name}} 
+                                    <div class="parserRuleElementArrow"></div>
+                                  </div>
+                                </div> 
+                                <div class="parserRuleRightHandSideEndArrowLine"><div></div></div>
+                              </div>
+                            </div>
+                            <div class="parserRuleRightHandSideEndArrow" ng-if="::$first"></div>
+                            <div class="parserRuleRightHandSideEndLineArrow" ng-if="::!$first"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+<!--
+              <md-button ng-click="duplicate(g)"><i class="fa fa-share fa-fw"></i> <span translate="MAKECOPY"></span></md-button>
+-->
+            </div>
+          </div>
+
+      </md-content>
+    </div>
+    
+  </md-content> 
+</md-dialog>

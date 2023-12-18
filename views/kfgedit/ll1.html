@@ -1,0 +1,57 @@
+<md-dialog style="padding:20px;width:80%;height:80%">
+  <md-content layout-fill> 
+
+    <h3 style="margin:0px;margin-bottom:20px" translate="KFGEDIT.LL1.TITLE"></h3>
+    <h4 ng-if="result.F1 == true"><i class="fa fa-check fa-fw" style="color:green;text-shadow:0 0 10px green"></i> <span translate="KFGEDIT.LL1.F1OK"></span></h4>
+    <h4 ng-if="result.F1 == false"><i class="fa fa-flash fa-fw" style="color:red;text-shadow:0 0 10px red"></i> <span translate="KFGEDIT.LL1.F1NOTOK"></span></h4>
+    <h4 ng-if="result.F2 == true"><i class="fa fa-check fa-fw" style="color:green;text-shadow:0 0 10px green"></i> <span translate="KFGEDIT.LL1.F2OK"></span></h4>
+    <h4 ng-if="result.F2 == false"><i class="fa fa-flash fa-fw" style="color:red;text-shadow:0 0 10px red"></i> <span translate="KFGEDIT.LL1.F2NOTOK"></span></h4>
+
+    <md-card ng-repeat="rule in bnf" style="background:white;margin-bottom:20px">
+      <md-toolbar style="min-height:1em;padding:8px;background:#C3E0F1;color:black;" layout="row"><span style="color:#f50">{{rule.name}}</span> <i class="fa fa-long-arrow-right fa-fw"></i> <span ng-repeat="r in rule.rhs" style="white-space:nowrap"><span ng-repeat="c in r[0]" ng-style="{'color':c.type == 'nt' ? '#f50':'blue'}">{{c.name}} </span><span ng-if="r[0].length == 0">&epsilon;</span><span ng-if="!$last"> |&nbsp;</span> </span> 
+      </md-toolbar>
+      <md-divider></md-divider>
+      <div layout-padding>
+        <span translate="KFGEDIT.LL1.F1"></span> <span ng-if="rule.F1 == true" translate="KFGEDIT.LL1.TRUE"></span><span ng-if="rule.F1 == false" translate="KFGEDIT.LL1.FALSE"></span>:
+        <table border=0 cellpadding="2">
+         <tr ng-repeat="r in rule.rhs" ng-if="r[2].length > 0">
+          <td style="padding-left:20px;vertical-align:top"> <b>FIRST</b>( <span ng-repeat="c in r[0]" ng-style="{'color':c.type == 'nt' ? '#f50':'blue'}">{{c.name}} </span><span ng-if="r[0].length == 0">&epsilon; </span>)</td><td> = {<span style="color:blue"> {{r[2].join(', ')}}</span> }</td>
+         </tr>
+         <tr ng-repeat="r in rule.rhs" ng-if="r[2].length == 0">
+          <td style="padding-left:0px;vertical-align:top"><i class="fa fa-flash fa-fw" style="color:red;text-shadow:0 0 10px red"></i> <b>FIRST</b>( <span ng-repeat="c in r[0]" ng-style="{'color':c.type == 'nt' ? '#f50':'blue'}">{{c.name}} </span><span ng-if="r[0].length == 0">&epsilon; </span>)</td><td> = ∅, <span translate="KFGEDIT.LL1.EMPTYFIRST"></span></td>
+         </tr>
+        </table>
+        <div style="padding:0px">
+         <div ng-repeat="r1 in rule.rhs" style="padding:0px">
+          <div style="padding-left:0px" ng-repeat="r2 in rule.rhs" ng-if="$index > $parent.$index && intersectArrays(r1[2],r2[2]).length > 0">
+            <i class="fa fa-flash fa-fw" style="color:red;text-shadow:0 0 10px red"></i> <b>FIRST</b>( <span ng-repeat="c in r1[0]" ng-style="{'color':c.type == 'nt' ? '#f50':'blue'}">{{c.name}} </span><span ng-if="r1[0].length == 0">&epsilon; </span>) ∩ <b>FIRST</b>( <span ng-repeat="c in r2[0]" ng-style="{'color':c.type == 'nt' ? '#f50':'blue'}">{{c.name}} </span><span ng-if="r2[0].length == 0">&epsilon; </span>) = { <span style="color:blue">{{intersectArrays(r1[2],r2[2]).join(", ")}}</span> }
+          </div>
+         </div>
+        </div>
+      </div>
+      <md-divider></md-divider>
+      <div layout-padding>
+        <span translate="KFGEDIT.LL1.F2"></span> <span ng-if="rule.F2 == true" translate="KFGEDIT.LL1.TRUE"></span><span ng-if="rule.F2 == false" translate="KFGEDIT.LL1.FALSE"></span>:
+
+        <table border=0 cellpadding="2">
+         <tr>
+          <td style="padding-left:20px"> <b>FIRST</b>( <span style="color:#f50">{{rule.name}}</span> ) = <span ng-if="rule.first.length > 0">{<span style="color:blue"> {{rule.first.join(', ')}}</span> }</span><span ng-if="rule.first.length == 0">∅</span>, </td>
+          <td style="padding-left:20px" ng-if="rule.first.indexOf('ɛ') >= 0"> <b>FOLLOW</b>( <span style="color:#f50">{{rule.name}}</span> ) = {<span style="color:blue"> {{rule.follow.join(', ')}}</span> }, </td>
+          <td style="padding-left:20px" ng-if="rule.first.indexOf('ɛ') < 0" translate="KFGEDIT.LL1.NOEPSILON"></td>
+         </tr>
+        </table>
+        <div style="padding:0" ng-if="rule.first.indexOf('ɛ') >= 0">
+          <div style="padding-left:30px" ng-if="rule.firstFollow.length == 0">
+              <b>FIRST</b>( <span style="color:#f50">{{rule.name}}</span> ) ∩ <b>FOLLOW</b>( <span style="color:#f50">{{rule.name}}</span> ) = ∅
+          </div>
+          <div style="padding-left:0px" ng-if="rule.firstFollow.length != 0">
+              <i class="fa fa-flash fa-fw" style="color:red;text-shadow:0 0 10px red"></i> <b>FIRST</b>( <span style="color:#f50">{{rule.name}}</span> ) ∩ <b>FOLLOW</b>( <span style="color:#f50">{{rule.name}}</span> ) = 
+              { <span style="color:blue"> {{rule.firstFollow.join(', ')}}</span> }
+          </div>
+        </div>
+      </div>
+
+    </md-card>
+    
+  </md-content> 
+</md-dialog>

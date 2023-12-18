@@ -1,0 +1,62 @@
+<md-dialog style="width:300px;max-width:300px;padding:20px">
+  <md-content> 
+    <h3 translate="USERACCOUNT"></h3> 
+
+    <div ng-if="changeProfileMode">
+      <p translate="CHANGEPROFILE" style="margin-bottom:2em"></p>
+      <md-input-container style="padding-bottom:0px;width:100%;margin:0;"> 
+        <label translate="NAME"></label> 
+        <input required name="name" ng-model="$parent.name" type="text"></input> 
+      </md-input-container> 
+      <md-input-container style="width:100%;margin:0;"> 
+        <label translate="SURNAME"></label> 
+        <input required name="surname" ng-model="$parent.surname" type="text"></input> 
+      </md-input-container> 
+    </div>
+
+    <div ng-if="changeEmailMode">
+      <p translate="CHANGEEMAIL" style="margin-bottom:2em"></p>
+      <md-input-container style="width:100%;margin:0;"> 
+        <label translate="EMAIL"></label> 
+        <input required name="email" ng-model="$parent.email" type="email"></input> 
+      </md-input-container> 
+    </div>
+
+    <div ng-if="changePassMode">
+      <p translate="CHANGEPASSWORD" style="margin-bottom:2em"></p>
+      <md-input-container  style="padding-bottom:0px;width:100%;margin:0;"> 
+        <label translate="PASSWORDNOW"></label> 
+        <input required name="pass0" ng-model="$parent.pass0" type="password"></input> 
+      </md-input-container> 
+      <md-input-container  style="padding-bottom:0px;width:100%;margin:0;"> 
+        <label translate="PASSWORD"></label> 
+        <input required name="pass" ng-model="$parent.pass" type="password"></input> 
+      </md-input-container> 
+      <md-input-container style="width:100%;margin:0;"> 
+        <label translate="PASSWORDREPEAT"></label> 
+        <input required name="pass2" ng-model="$parent.pass2" type="password"></input> 
+      </md-input-container> 
+    </div>
+    
+    <div style="color:red;text-align:center">{{error}}</div>
+
+    <div ng-if="!changePassMode && !changeEmailMode && !changeProfileMode" style="padding:4px">
+      <md-button class="md-raised" style="display:block;margin:0;margin-bottom:0.5em;text-align:left;width:100%" translate="CHANGEEMAIL" ng-click="$parent.$parent.changeEmailMode = 1"> 
+      </md-button> 
+      <md-button class="md-raised" style="display:block;margin:0;margin-bottom:0.5em;text-align:left;width:100%" translate="CHANGEPROFILE" ng-click="$parent.$parent.changeProfileMode = 1"> 
+      </md-button> 
+      <md-button class="md-raised" style="display:block;margin:0;margin-bottom:0.5em;text-align:left;width:100%" translate="CHANGEPASSWORD" ng-click="$parent.$parent.changePassMode = 1"> 
+      </md-button> 
+      <md-button class="md-raised" style="display:block;margin:0;margin-bottom:0.5em;text-align:left;width:100%" translate="LOGOUT" ng-click="logout()"> 
+      </md-button> 
+    </div>
+    
+  </md-content> 
+  <div class="md-actions"> 
+    <md-button ng-if="changePassMode || changeEmailMode || changeProfileMode" type="button" ng-click="$parent.$parent.changeProfileMode = false;$parent.$parent.changePassMode = false;$parent.$parent.changeEmailMode = false;$parent.error = ''" translate="CANCEL"></md-button> 
+    <md-button ng-if="changePassMode" class="md-primary" ng-click="savePass()" translate="SAVE"></md-button> 
+    <md-button ng-if="changeEmailMode" class="md-primary" ng-click="saveEmail()" translate="SAVE"></md-button> 
+    <md-button ng-if="changeProfileMode" class="md-primary" ng-click="saveProfile()" translate="SAVE"></md-button> 
+  </div>
+</md-dialog>
+

@@ -1,0 +1,18 @@
+.borderLabel {
+ border:1px solid #999;
+ padding:2px;
+ vertical-align:middle;
+ background:#fff;
+ border-radius:5px;
+}
+.wordSetRow {
+ padding:4px;
+ display:inline-block;
+}
+.wordSetRow:hover{
+ background:rgba(255,255,255,0.3);
+}
+
+md-radio-button.activeContent .md-label {
+ pointer-events:auto;
+}

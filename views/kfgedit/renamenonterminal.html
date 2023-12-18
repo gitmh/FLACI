@@ -1,0 +1,29 @@
+<form ng-submit="hide()">
+<md-dialog style="min-width:300px;padding:20px">
+  <style>
+  .md-dialog-container {
+    z-index: 80;
+  }
+  md-backdrop.md-dialog-backdrop {
+    z-index: 79;
+  }
+  </style>
+  <md-content > 
+    <h3 translate="KFGEDIT.RENAMENONTERMINAL"></h3> 
+    <md-input-container style="width:100%"> 
+      <label translate="KFGEDIT.OLDNONTERMINAL"></label> 
+      <md-select ng-model="oldname"><md-option ng-repeat="rule in grammar.bnf" value="{{rule.name}}">{{rule.name}}</md-option></md-select> 
+    </md-input-container>  
+
+    <md-input-container style="width:100%"> 
+      <label translate="KFGEDIT.NEWNONTERMINAL"></label> 
+      <input ng-model="newname"></input> 
+    </md-input-container>  
+
+  </md-content> 
+  <div class="md-actions"> 
+    <md-button type="button" ng-click="cancel()" translate="CANCEL"></md-button> 
+    <md-button class="md-primary" type="submit" translate="SAVE"></md-button> 
+  </div>
+</md-dialog>
+</form>

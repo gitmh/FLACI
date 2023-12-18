@@ -1,0 +1,70 @@
+<div ng-controller="AppController as self" style="position:absolute;left:0px;top:0px;height:100%;width:100%">
+  <md-toolbar layout="row" layout-align="center center" style="height:64px">
+    <span flex style="padding-left:10px;white-space:nowrap;"><i class="fa fa-cloud"></i> FLACI <span hide-sm hide-md>- <b>F</b>ormal <b>L</b>anguages, <b>A</b>utomata, <b>C</b>ompilers and <b>I</b>nterpreters </span></span>
+    <span flex></span>
+    <ng-include src="'languageselect.html'"></ng-include>
+    &nbsp;
+  </md-toolbar>
+
+  <md-content layout="row" style="position:absolute;left:0px;top:64px;bottom:0px;width:100%">
+   <div style="max-width:1000px;text-align:center;margin:auto">
+     <!-- Languages -->
+     <div ng-click="self.openLanguages()" class="mainAppBtn md-whiteframe-z2">
+       <div class="appIcon appIconLarge">
+         <span style="font-size:80%;position: relative;top: -2px;">
+           <span class="borderLabel" style="border-color:black;border-width:2px">a</span>
+           <span class="borderLabel" style="border-color:black;border-width:2px">b</span>
+           <span class="borderLabel" style="border-color:black;border-width:2px">c</span>
+          </span>
+       </div>
+       <h4 translate="MODULELANGUAGES"></h4>
+     </div>
+
+     <!-- RegExp -->
+     <div ng-click="self.openRegExpEdit()" class="mainAppBtn md-whiteframe-z2">
+       <div class="appIcon appIconLarge">
+         <b>[ab]+</b>
+       </div>
+       <h4 translate="MODULEREGEXPEDIT"></h4>
+     </div>
+
+     <!-- Grammars -->
+     <div ng-click="self.openKfgEdit()" class="mainAppBtn md-whiteframe-z2">
+       <div class="appIcon appIconLarge">
+         <span class="fa-stack fa-lg">
+           <i class="fa fa fa-code-fork fa-rotate-180 fa-stack-1x" style="margin-left:-10px;margin-top:-10px"></i>
+           <i class="fa fa fa-code-fork fa-flip-vertical fa-stack-1x" style="margin-left:10px;margin-top:-10px"></i>
+           <span class="fa fa-stack-1x" style="font-size: 40%;margin-top:22px;">a &nbsp;&nbsp;b &nbsp;&nbsp;c</span>
+         </span>
+       </div>
+       <h4 translate="MODULEKFGEDIT"></h4>
+     </div>
+
+     <!-- Automata -->
+     <div ng-click="self.openAutoEdit()" class="mainAppBtn md-whiteframe-z2">
+       <div class="appIcon appIconLarge " style="font-size:150%">
+         <span class="fa-stack fa-lg">
+           <i class="fa fa-circle-thin fa-stack-1x" style="font-size: 150%;width: 50px;height: 50px;top: 5px; left: 5px;color:transparent;border-radius:100px;background:white"></i>
+           <i class="fa fa-circle-thin fa-stack-1x" style="font-size: 200%"></i>
+           <i class="fa fa-circle-thin fa-stack-1x" style="font-size: 145%"></i>
+           <span class="fa fa-stack-1x" style="font-size: 55%;">q<sub>0</sub></span>
+         </span>
+       </div>
+       <h4 translate="MODULEAUTOEDIT"></h4>
+     </div>
+
+     <!-- Compilers -->
+     <div ng-click="self.openTDiag()" class="mainAppBtn md-whiteframe-z2">
+       <div class="appIcon appIconLarge">
+         <div style="position:absolute;font-family:monospace">
+           <div style="background:#fff;width:60px;height:24px;border:2px solid #000;position: absolute;left: 8px;top: 16px;font-size: 18px;">
+             <div style="position: absolute;top: -28px; left: 6px;">I<i style="margin-left: 2px;font-size:100%" class="fa fa-arrow-right fa-fw"></i>O</div>
+           </div>
+           <div style="background:#fff;width:24px;height:24px;border:2px solid #000;position:absolute;left: 26px;top:42px;font-size: 18px; border-top: 0;"><div style="position: absolute;top: -28px; left: 6px;">M</div></div>
+          </div>
+        </div>
+      <h4 translate="MODULETDIAG"></h4>
+     </div>
+   </div>
+  </md-content>
+</div>

@@ -1,0 +1,110 @@
+<md-dialog style="padding:20px;width:80%;height:80%">
+  <md-button style="position: absolute;z-index:2;right: 0px;top: 0px;min-width: 2em;margin:0" aria-label="close" ng-click="cancel()"><i class="fa fa-fw fa-times"></i></md-button>
+  <md-content layout-fill> 
+    <h3 style="margin:0px" translate="PUBLICCOLLECTION"></h3>
+
+    <div layout="row" style="position:absolute;left:0;right:0;top:30px;bottom:0px;padding:8px">
+      <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-locked-open="true">
+        <md-content>
+          <md-list>
+            <md-list-item ng-repeat="f in folders | orderBy:'Name' track by f.ID" ng-class="{'active':f.open}" ng-click="openFolder(f)">{{f.Name}}</md-list-item>
+          </md-list>
+        </md-content>
+      </md-sidenav>
+
+      <md-content layout-fill style="overflow-y:auto">
+
+          <div ng-repeat="d in items | orderBy:'Name' track by d.ID" class="flaciItemCard md-whiteframe-z2" layout-padding>
+            <div layout-padding layout="column" layout-align-gt-sm="row" layout-align="space-between center">
+              <div style="width:100%;padding:0">
+                <big><b>{{d.Name}}</b></big> 
+              </div>
+              <div ng-if="d.Description && d.Description != ''" style="position:absolute;z-index:2;background:white;padding:16px;left:0;bottom:0;width:100%;">{{::d.Description}}</div>
+              <div style="width:100%;height:180px;position:relative; overflow:hidden;margin-top:10px;margin-bottom:0px;background:#eee;cursor:pointer" ng-click="duplicate(d)">
+
+                <div style="transform: scale(0.5); transform-origin: top left;position:relative;width:200%;height:200%">
+
+                  <div ng-repeat="e in ::d.thumbElements">
+        
+                    <!-- Compiler blocks -->
+                    <div ng-if="::e.type == 'compiler'" class="shape" 
+                      style="width:150px;height:{{::e.runnable != '' ? '150':'100'}}px;left:{{::e.x}}px;top:{{::e.y}}px">
+                      <div class="shapeblock borderL borderT borderB" style="left:0px; top:0px">
+                        {{::e.input}}
+                      </div>
+                      <div class="shapeblock borderT" style="left:50px; top:0px">
+                        <span class="bigArrow">&rarr;</span>
+                      </div>
+
+                      <div class="shapeblock borderR borderT borderB" style="left:100px; top:0px">
+                        {{::e.output}}
+                      </div>
+                      <div class="shapeblock borderL borderR borderB" style="left:50px; top:50px">
+                        {{::e.written}}
+                      </div>
+                      <div ng-if="::e.written == 'JS'" class="shapeblock triangle" style="left:50px; top:100px">
+                        <div></div>
+                      </div>
+                    </div>
+
+                    <!-- Interpreter blocks -->
+                    <div ng-if="::e.type == 'interpreter'" class="shape"
+                         style="width:50px; height:{{::e.written == 'JS' ? '200':'150'}}px;left:{{::e.x}}px;top:{{::e.y}}px" >
+                      <div class="shapeblock borderL borderT borderR" style="left:0px; top:0px">
+                        {{::e.input}}
+                      </div>
+                      <div class="shapeblock borderL borderR" style="left:0px; top:50px">
+                        <span style="font-size:150%;vertical-align:middle">[</span>
+                        <i class="fa fa-cog"></i>
+                        <span style="font-size:150%;vertical-align:middle">]</span>
+                      </div>
+                      <div class="shapeblock borderL borderR borderB" style="left:0px; top:100px">
+                        {{::e.written}}
+                      </div>
+                      <div ng-if="::e.written == 'JS'" class="shapeblock triangle" style="left:0px; top:150px">
+                        <div></div>
+                      </div>
+                    </div>          
+          
+                    <!-- Program blocks -->
+                    <div ng-if="::e.type == 'program'" class="shape" 
+                      style="width:50px; height:{{::e.runnable != '' ? '150':'100'}}px;left:{{::e.x}}px;top:{{::e.y}}px" >
+                      <div class="shapeblock borderL borderT borderR" style="left:0px; top:0px">
+                        {{::e.name}}
+                      </div>
+                      <div class="shapeblock borderL borderR borderB" style="left:0px; top:50px">
+                        {{::e.written}}
+                      </div>
+                      <div ng-if="::e.written == 'JS'" class="shapeblock triangle" style="left:0px; top:100px">
+                        <div></div>
+                      </div>
+                    </div>
+          
+                    <!-- E/A blocks -->
+                    <div ng-if="::e.type == 'ea'" class="shape" 
+                      style="width:50px; height:50px;left:{{::e.x}}px;top:{{::e.y}}px" >
+                      <div class="shapeblock borderL borderT borderR borderB" style="left:0px; top:0px">
+                        {{::e.name}}
+                      </div>
+                    </div>
+
+                    <!-- Comment blocks -->
+                    <div ng-if="::e.type == 'comment'" class="shape" style="left:{{::e.x}}px;top:{{::e.y}}px" >
+                      <div class="comment" ng-bind-html="self.toHTML(e.name)"></div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>  
+<!--
+              <md-button ng-click="duplicate(d)"><i class="fa fa-share fa-fw"></i> <span translate="MAKECOPY"></span></md-button>
+-->             
+            </div>
+          </div>
+
+      </md-content>
+    </div>
+    
+  </md-content> 
+</md-dialog>

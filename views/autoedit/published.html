@@ -1,0 +1,104 @@
+<md-dialog style="padding:20px;width:80%;height:80%">
+  <md-button style="position: absolute;z-index:2;right: 0px;top: 0px;min-width: 2em;margin:0" aria-label="close" ng-click="cancel()"><i class="fa fa-fw fa-times"></i></md-button>
+  <md-content layout-fill> 
+    <h3 style="margin:0px" translate="PUBLICCOLLECTION"></h3>
+
+    <div layout="row" style="position:absolute;left:0;right:0;top:30px;bottom:0px;padding:8px">
+      <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-locked-open="true">
+        <md-content>
+          <md-list>
+
+            <md-list-item ng-repeat="f in folders | orderBy:'Name' track by f.ID" ng-class="{'active':f.open}" ng-click="openFolder(f)">{{f.Name}}</md-list-item>
+          </md-list>
+        </md-content>
+      </md-sidenav>
+
+      <md-content layout-fill style="overflow-y:auto">
+          <div ng-repeat="a in items | orderBy:'Name' track by a.ID" class="flaciItemCard md-whiteframe-z2" layout-padding>
+            <div layout-padding layout="column" layout-align-gt-sm="row" layout-align="space-between center">
+              <div style="width:100%;padding:0">
+                <big><b>{{a.Name}}</b></big> 
+              </div>
+              <div ng-if="a.Description && a.Description != ''" style="position:absolute;z-index:2;background:white;padding:16px;left:0;bottom:0;width:100%;">{{a.Description}}
+                <div style="position:absolute;z-index:2;font-weight:bold;box-shadow: 1px 1px 2px rgba(0,0,0,0.3);bottom:calc(100% - 6px);right:12px;padding:4px;font-size:90%;background:white" ng-switch="a.Type">
+                  <span ng-switch-when="DEA" translate="AUTOEDIT.TYPEDEASHORT"></span>
+                  <span ng-switch-when="NEA" translate="AUTOEDIT.TYPENEASHORT"></span>
+                  <span ng-switch-when="MEALY" translate="AUTOEDIT.TYPEMEALYSHORT"></span>
+                  <span ng-switch-when="MOORE" translate="AUTOEDIT.TYPEMOORESHORT"></span>
+                  <span ng-switch-when="DKA" translate="AUTOEDIT.TYPEDKASHORT"></span>
+                  <span ng-switch-when="NKA" translate="AUTOEDIT.TYPENKASHORT"></span>
+                  <span ng-switch-when="TM" translate="AUTOEDIT.TYPETMSHORT"></span>
+                </div>
+              </div>
+              
+              <div style="position:absolute;z-index:2;font-weight:bold;box-shadow: 1px 1px 2px rgba(0,0,0,0.3);bottom:12px;right:12px;padding:4px;font-size:90%;background:white" ng-switch="a.Type" ng-if="!a.Description || a.Description == ''">
+                <span ng-switch-when="DEA" translate="AUTOEDIT.TYPEDEASHORT"></span>
+                <span ng-switch-when="NEA" translate="AUTOEDIT.TYPENEASHORT"></span>
+                <span ng-switch-when="MEALY" translate="AUTOEDIT.TYPEMEALYSHORT"></span>
+                <span ng-switch-when="MOORE" translate="AUTOEDIT.TYPEMOORESHORT"></span>
+                <span ng-switch-when="DKA" translate="AUTOEDIT.TYPEDKASHORT"></span>
+                <span ng-switch-when="NKA" translate="AUTOEDIT.TYPENKASHORT"></span>
+                <span ng-switch-when="TM" translate="AUTOEDIT.TYPETMSHORT"></span>
+              </div>
+              
+              
+              <div style="width:100%;height:180px;position:relative; overflow:hidden;margin-top:10px;margin-bottom:0px;background:#eee;cursor:pointer" ng-click="duplicate(a)">
+                
+               <svg xmlns="http://www.w3.org/2000/svg"
+                    width="264" height="170" style="min-width:100%; min-height:100%; display: block;position:absolute;pointer-events:none;top:0;left:0">
+                <g ng-attr-transform="scale(0.4,0.4) translate({{::(-a.thumbAutomaton.centerX*0.75+264)+','+(-a.thumbAutomaton.centerY*0.75+140)}})">
+                 <!-- TransitionLines -->
+                 <g ng-repeat="s in ::a.thumbAutomaton.States">
+                   <g ng-if="::s.Start">
+                     <line class="transitionLine" ng-attr-x1="{{::s.x}}" ng-attr-y1="{{::s.y}}" ng-attr-x2="{{::s.x-s.Radius*3}}" ng-attr-y2="{{::s.y}}"/> 
+                     <text cx="0" cy="0" ng-attr-transform="{{::'translate('+(s.x-s.Radius*3)+','+(s.y-10)+')'}}" style="font-size:80%">Start</text>
+                     <polygon class="transitionArrow" 
+                              ng-attr-points="{{::(s.x-s.Radius)+','+s.y+' '+(s.x-s.Radius-15)+','+(s.y-7.5)+' '+(s.x-s.Radius-15)+','+(s.y+7.5)}}" />
+                   </g>
+                   <g ng-repeat="t in ::s.Transitions" class="transition">
+                     <path class="transitionLine" ng-attr-d="{{::a.thumbAutomaton.getTransitionPath(s,a.thumbAutomaton.States[t.Target],t)}}"/>
+                     <polygon class="transitionArrow" ng-attr-points="{{::a.thumbAutomaton.getArrowPoints(t)}}" />
+                   </g>
+                 </g> 
+                 <!-- States -->
+                 <g ng-repeat="s in ::a.thumbAutomaton.States" ng-attr-transform="translate({{::s.x}},{{::s.y}})">
+                   <circle class="state" cx="0" cy="0" ng-attr-r="{{::s.Radius}}"/>
+                   <circle class="stateInnerCircle" ng-if="::s.Final" cx="0" cy="0" ng-attr-r="{{::s.Radius*0.8}}"/>
+                   <text ng-if="::a.Type != 'MOORE'" class="stateName" cx="50%" cy="50%">{{::self.limitTextLength(s.Name,5)}}</text>
+                   <text ng-if="::a.Type == 'MOORE'" style="font-size:80%" class="stateName" y="-12">{{::self.limitTextLength(s.Name,5)}}</text>
+                   <text ng-if="::a.Type == 'MOORE'" style="font-size:80%"  class="stateName" y="12">{{::self.limitTextLength(s.Output,5)}}</text>
+                   <line ng-if="::a.Type == 'MOORE'" class="transitionLine" ng-attr-x1="{{::s.Radius*-0.7}}" ng-attr-x2="{{::s.Radius*0.7}}"/>
+
+                 </g>
+                 <!-- Labels -->
+                 <g ng-repeat="s in ::a.thumbAutomaton.States">
+                   <g ng-repeat="t in ::s.Transitions" class="transition" ng-attr-transform="translate({{::t.textPoint.x}},{{::t.textPoint.y}})">
+                     <text x="0" y="0" ng-attr-class="{{'transitionLabelText labelAlign_'+t.textAlign+' labelVAlign_'+t.textVAlign}}" >
+                       <tspan ng-if="::a.Type == 'DEA' || a.Type == 'NEA' || a.Type == 'MOORE'" ng-repeat="la in ::t.Labels track by $index"
+                              ng-class="::{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{::(la === '' ? '&epsilon;':la) + (!$last ? ', ':'')}}</tspan>
+                       <tspan ng-if="::a.Type == 'MEALY'" ng-repeat="la in ::t.Labels track by $index" x="0" 
+                            ng-attr-y="{{((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"  ng-class="::{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{::la[0] + " / "+ la[1]}}</tspan>
+                       <tspan ng-if="::a.Type == 'DKA' || a.Type == 'NKA'" ng-repeat="la in ::t.Labels track by $index" x="0" 
+                              ng-attr-y="{{((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"
+                              ng-class="::{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{::'('+(la[0] === '' ? '&epsilon;' : la[0])+','+(la[1] === '' ? '&epsilon;' : la[1])+'):'+(la[2].length == 0 ? '&epsilon;' : la[2].join(""))}}</tspan>
+                       <tspan ng-if="::a.Type == 'TM'" ng-repeat="la in ::t.Labels track by $index" x="0"
+                              ng-attr-y="{{::((t.textVAlign == 'center' ? -(t.Labels.length-1)/2*1.2 : 0)+(t.textVAlign == 'bottom' ? -1:1)*1.2*$index)+'em'}}"
+                              ng-class="::{'play':t.playLabel == $index, 'error':t.hasLabelErrors.indexOf($index) != -1}">{{::la[0]+':'+la[1]+','+la[2]}}</tspan>
+                     </text>
+                   </g>
+                 </g> 
+                </g> 
+               </svg>
+
+              </div>  
+<!--
+              <md-button ng-click="duplicate(a)"><i class="fa fa-share fa-fw"></i> <span translate="MAKECOPY"></span></md-button>
+-->              
+            </div>
+          </div>
+
+      </md-content>
+    </div>
+    
+  </md-content> 
+</md-dialog>
