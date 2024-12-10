@@ -943,7 +943,9 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
             clickOutsideToClose: true,
             ok: 'OK'
           });
+
           $mdDialog.show(alert);
+          
           $timeout(function(){
             $('.goToRegExp').on("click",function(){
               $mdDialog.hide();
