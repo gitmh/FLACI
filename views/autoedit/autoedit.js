@@ -939,11 +939,17 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
 
           var alert = $mdDialog.alert({
             title: $translate.instant("REGEXPEDIT.REGEXP"),
-            htmlContent: $translate.instant("AUTOEDIT.TRANSFORM.EATOREGEXPTEXT",{"REGEXP":'<span class="selectable LRPaddingSpan">'+r.regex+'</span>'})+"<br><br>"+'<a class="md-button md-primary" href="regexp?s='+encodeURIComponent(r.regex)+'">'+$translate.instant("REGEXPEDIT.OPENIN")+'</a>',
+            htmlContent: $translate.instant("AUTOEDIT.TRANSFORM.EATOREGEXPTEXT",{"REGEXP":'<span class="selectable LRPaddingSpan">'+r.regex+'</span>'})+"<br><br>"+'<a class="goToRegExp md-button md-primary">'+$translate.instant("REGEXPEDIT.OPENIN")+'</a>',
             clickOutsideToClose: true,
             ok: 'OK'
           });
           $mdDialog.show(alert);
+          $timeout(function(){
+            $('.goToRegExp').on("click",function(){
+              $mdDialog.hide();
+              $location.path('/regexp').search({s: r.regex});
+            });
+          },250)
         }
       };
 
