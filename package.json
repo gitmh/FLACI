@@ -8,7 +8,7 @@
   },
   "author": "Michael Hielscher",
   "devDependencies": {
-    "electron": "^19.0.2"
+    "electron": "^33.2.1"
   },
   "dependencies": {
     "electron-packager": "^15.5.1"

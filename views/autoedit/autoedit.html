@@ -838,14 +838,18 @@
                  </md-button>
                  
                  <md-button ng-if="!a.simulationRunning && a.simulationPaused" style="width:100%;text-transform: initial;margin:0px" class="md-raised md-primary" ng-click="a.continueSimulation()" aria-label="continue">
-                   <i class="fa fa-play fa-fw"></i> <span translate="AUTOEDIT.CONTINUESIMULATION"></span>
+                   <i class="fa fa-play fa-fw"></i> <span translate="AUTOEDIT.CONTINUE"></span>
                  </md-button>
-                 <md-button ng-if="!a.simulationRunning && a.simulationPaused" layout-fill style="text-transform: initial;margin:0px;min-width:2em;width:4em;margin-left:1em" class="md-raised md-primary" ng-click="a.runSimulation()" aria-label="reset">
+                 
+                 <md-button ng-if="!a.simulationRunning && a.simulationPaused" layout-fill style="text-transform: initial;margin:0px;min-width:2em;width:4em;margin-left:1em" class="md-raised md-primary" ng-click="a.animateNextStep()" aria-label="next">
+                   <i class="fa fa-step-forward fa-fw"></i> <md-tooltip><span translate="AUTOEDIT.NEXTSTEPSIMULATION"></span></md-tooltip>
+                 </md-button>
+                 <md-button ng-if="!a.simulationRunning && a.simulationPaused" layout-fill style="text-transform: initial;margin:0px;min-width:2em;width:4em;margin-left:1em" class="md-raised md-primary" ng-click="a.runSimulation(true)" aria-label="reset">
                    <i class="fa fa-undo fa-fw"></i> <md-tooltip><span translate="AUTOEDIT.RESTARTSIMULATION"></span></md-tooltip>
                  </md-button>
 
                </div>
-
+               
                <div>
                  <span style="font-size:75%;rgba(0,0,0,0.54);float:right" translate="AUTOEDIT.FAST"></span>
                  <span style="font-size:75%;rgba(0,0,0,0.54);float:left" translate="AUTOEDIT.SLOW"></span>

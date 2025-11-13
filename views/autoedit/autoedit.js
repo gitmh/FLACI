@@ -939,19 +939,11 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
 
           var alert = $mdDialog.alert({
             title: $translate.instant("REGEXPEDIT.REGEXP"),
-            htmlContent: $translate.instant("AUTOEDIT.TRANSFORM.EATOREGEXPTEXT",{"REGEXP":'<span class="selectable LRPaddingSpan">'+r.regex+'</span>'})+"<br><br>"+'<a class="goToRegExp md-button md-primary">'+$translate.instant("REGEXPEDIT.OPENIN")+'</a>',
+            htmlContent: $translate.instant("AUTOEDIT.TRANSFORM.EATOREGEXPTEXT",{"REGEXP":'<span class="selectable LRPaddingSpan">'+r.regex+'</span>'})+"<br><br>"+'<a class="md-button md-primary" href="regexp?s='+encodeURIComponent(r.regex)+'">'+$translate.instant("REGEXPEDIT.OPENIN")+'</a>',
             clickOutsideToClose: true,
             ok: 'OK'
           });
-
           $mdDialog.show(alert);
-          
-          $timeout(function(){
-            $('.goToRegExp').on("click",function(){
-              $mdDialog.hide();
-              $location.path('/regexp').search({s: r.regex});
-            });
-          },250)
         }
       };
 
@@ -1551,6 +1543,17 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
         self.automaton.acceptCache = []; // reset
         if(!noSave) self.makeUndoStep();
       };
+
+      self.changeStateRadius = function(s,v){
+        var n = s.Radius+v;
+        if(n >= 20 && n <= 100){
+          s.Radius = n;
+        }
+        self.bindStates();
+        self.updatePoints();
+
+        if(!noSave) self.makeUndoStep();
+      };
     
       self.changeStateName = function(s){
         // prevent double names on states
@@ -1566,6 +1569,8 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
           s.Name = s.Name + "a";
 
           self.changeStateName(s);
+        }else{
+          if(!noSave) self.makeUndoStep();
         }
       };
 
@@ -1894,10 +1899,64 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
       self.continueSimulation = function(){
         self.simulationRunning = true;
         self.simulationPaused = false;
-        if(self.currentTraceItem) {
+        if(self.currentTraceItem && self.currentTraceItem.transition) {
           self.currentTraceItem.transition.play = false;
           self.currentTraceItem.transition.playLabel = null;
         }
+      }
+      self.animateNextStep = function(onlyToState){
+        if(self.currentSimulationTimeout) $timeout.cancel(self.currentSimulationTimeout);
+
+        var machine = self.currentTraceMachine;
+        var step = (self.simulationTrace[machine].animateStep ? self.simulationTrace[machine].animateStep : 0);
+        // disable last
+        if(!onlyToState){
+          var item = self.simulationTrace[machine].items[step+1];
+          if(!item) return; // finished, no next item          
+        }
+
+        item = self.simulationTrace[machine].items[step];
+        if(item.state) item.state.play = false;
+        if(item.transition) item.transition.play = false;
+        if(item.transition) delete item.transition.playLabel;
+//        step = step + 1; 
+
+        item = self.simulationTrace[machine].items[step];
+        if(!item) return; // finished
+        self.simulationTrace[machine].animateStep = step;
+        self.currentTraceItem = item;
+
+        item.state.play = true;
+
+        if(item.transition){
+          if(onlyToState) return; // only animate to state now
+          self.currentSimulationTimeout = $timeout(function(){
+            if(self.simulationTrace[machine].animateStep != step) return;
+            //var s = $("#simulationTrace"+self.ID+"_"+machine+"_"+(step-3));
+            //$("#simulationTrace"+self.ID).scrollLeft(s.length > 0 ? s.position().left : 0);
+
+            item.state.play = false;
+            item.transition.play = true;
+            item.transition.playLabel = item.label;
+            self.currentSimulationTimeout = $timeout(function(){
+              if(self.simulationTrace[machine].animateStep != step) return;
+              //var s = $("#simulationTrace"+self.ID+"_"+machine+"_"+(step-3));
+              //$("#simulationTrace"+self.ID).scrollLeft(s.length > 0 ? s.position().left : 0);
+
+              item.transition.play = false;
+              delete item.transition.playLabel;
+
+              var nextItem = self.simulationTrace[machine].items[step+1];
+              if(!nextItem) return; // finished, no next item
+              self.simulationTrace[machine].animateStep++; // next
+              self.animateNextStep(true);
+
+            },2000-self.simulationSpeed);      
+          },2000-self.simulationSpeed);
+        }else{
+          self.simulationRunning = false; 
+          self.simulationPaused = false;
+        }        
       }
       self.animateSimulation = function(machine,start){
         // stop any running simulation
@@ -1968,11 +2027,34 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
         
         },10);
         
+        self.currentTraceMachine = machine;
         self.simulationTrace[machine].animate = true;     
         self.simulationRunning = true;   
         doStep(start ? start : 0);
       };
 
+      self.randomSimulationInput = function(){
+        self.checkAutomaton();
+        if(!self.correct) {
+          self.showAlert($translate.instant("ERRORS.AUTOMATONERRORS"));
+          return;
+        }
+        var input = self.automaton.simulationInput ? self.automaton.simulationInput.slice(0) : [];
+        var joined = input.join("\n");
+
+        for(var x = 0; x < 10; x++){
+          var word = [];
+          var len = Math.ceil(Math.random()*Math.random()*20);
+          for(var i=0; i < len; i++){
+            var pick = Math.floor(Math.random()*self.automaton.Alphabet.length);
+            word.push(self.automaton.Alphabet[pick]);
+          }
+          if(joined != word.join("\n")){
+            self.automaton.simulationInput = word;
+            break;
+          }
+        }              
+      };
       self.randomSimulationInputWord = function(){
         self.checkAutomaton();
         if(!self.correct) {
@@ -2019,20 +2101,6 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
           }
 
         }               
-        if(self.Type == "TM") {
-          for(var x = 0; x < 10; x++){
-            var word = [];
-            var len = Math.ceil(Math.random()*Math.random()*20);
-            for(var i=0; i < len; i++){
-              var pick = Math.floor(Math.random()*self.automaton.Alphabet.length);
-              word.push(self.automaton.Alphabet[pick]);
-            }
-            if(joined != word.join("\n")){
-              self.automaton.simulationInput = word;
-              break;
-            }
-          }            
-        }
       };
       
       self.checkAccept = function(input){
@@ -2586,29 +2654,37 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
       // Run a simulation manually 
       //////////////////////////////////////////////////
 
-      self.runSimulation = function(){
+      self.runSimulation = function(reset){
+        var lastSettingPaused = self.simulationPaused;
+        var lastSettingRunning = self.simulationRunning;
+
         self.simulationPaused = false;
-
         self.showSimulationPanel = true;
-        if(!self.automaton.simulationInput) self.automaton.simulationInput = [];
-        self.simulationRunInput = self.automaton.simulationInput.slice(0);
-        
-        var input = self.automaton.simulationInput.slice(0);
+        self.simulationRunning = true;
+        $timeout(function(){
+          if(!self.automaton.simulationInput) self.automaton.simulationInput = [];
+          self.simulationRunInput = self.automaton.simulationInput.slice(0);
+          
+          var input = self.automaton.simulationInput.slice(0);
 
-        self.addCurrentInputToLastInputs();
+          self.addCurrentInputToLastInputs();
 
-        self.performSimulation(input.slice(0));
+          self.performSimulation(input.slice(0));
 
-        if(!self.simulationTrace || self.simulationTrace.length == 0) return;
+          if(!self.simulationTrace || self.simulationTrace.length == 0) return;
 
-        var result = false;
-        for(var i=0; i < self.simulationTrace.length; i++){
-          result = result || self.simulationTrace[i].accept;
-        }
-        result =  result ? 1 : -1;
-        self.automaton.acceptCache[input.join('°')] = result;
-
-        self.animateSimulation();
+          var result = false;
+          for(var i=0; i < self.simulationTrace.length; i++){
+            result = result || self.simulationTrace[i].accept;
+          }
+          result =  result ? 1 : -1;
+          self.automaton.acceptCache[input.join('°')] = result;
+          self.animateSimulation();
+          if(reset) {
+            self.simulationPaused = lastSettingPaused;
+            self.simulationRunning = lastSettingRunning;
+          }
+        },100);
       };
 
       //////////////////////////////////////////////////
@@ -2718,24 +2794,24 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
           var d = Math.sqrt((p.x-s1.x)*(p.x-s1.x) + (p.y-s1.y)*(p.y-s1.y));
           if(d == 0) return; // problem
           if(state == 0){
-            if(Math.round(d) == s1.Radius){
+            if(Math.round(d) == s2.Radius){
               t.arrowPoints[4] = p;
               p = self.getPointOnBezier(s1,s2,t.pathPoints[0],t.pathPoints[1],1-(0.001*time));
               t.arrowPoints[0] = p;
               state = 1; 
               checkPoint(time);
             }else
-            if(d > Math.round(s1.Radius)) checkPoint(time / 2); else checkPoint(time * 1.5);
+            if(d > Math.round(s2.Radius)) checkPoint(time / 2); else checkPoint(time * 1.5);
           }else
           if(state == 1){         
-            if(Math.round(d) == Math.round(s1.Radius*1.5)){
+            if(Math.round(d) == Math.round(s2.Radius*1.5)){
               t.arrowPoints[5] = p;
               p = self.getPointOnBezier(s1,s2,t.pathPoints[0],t.pathPoints[1],1-(0.001*time));
               t.arrowPoints[1] = p;
               state = 2;
               return;
             }else
-            if(d > Math.round(s1.Radius*1.5)) checkPoint(time / 2); else checkPoint(time * 1.5);
+            if(d > Math.round(s2.Radius*1.5)) checkPoint(time / 2); else checkPoint(time * 1.5);
           }
         }
         checkPoint(250); 
@@ -2744,15 +2820,15 @@ app.controller('AutoEditController', function($scope, $location, $routeParams, $
         var a1 = self.getAngleRad(t.arrowPoints[0],t.arrowPoints[1])-Math.PI/2;
         var a2 = self.getAngleRad(t.arrowPoints[4],t.arrowPoints[5])+Math.PI/2;
 
-        var x1 = (t.arrowPoints[1].x + Math.cos(a1)*s1.Radius*0.25);
-        var y1 = (t.arrowPoints[1].y + Math.sin(a1)*s1.Radius*0.25);
-        var x2 = (t.arrowPoints[1].x - Math.cos(a1)*s1.Radius*0.25);
-        var y2 = (t.arrowPoints[1].y - Math.sin(a1)*s1.Radius*0.25);
+        var x1 = (t.arrowPoints[1].x + Math.cos(a1)*s2.Radius*0.25);
+        var y1 = (t.arrowPoints[1].y + Math.sin(a1)*s2.Radius*0.25);
+        var x2 = (t.arrowPoints[1].x - Math.cos(a1)*s2.Radius*0.25);
+        var y2 = (t.arrowPoints[1].y - Math.sin(a1)*s2.Radius*0.25);
 
-        var x3 = (t.arrowPoints[5].x + Math.cos(a2)*s2.Radius*0.25);
-        var y3 = (t.arrowPoints[5].y + Math.sin(a2)*s2.Radius*0.25);
-        var x4 = (t.arrowPoints[5].x - Math.cos(a2)*s2.Radius*0.25);
-        var y4 = (t.arrowPoints[5].y - Math.sin(a2)*s2.Radius*0.25);
+        var x3 = (t.arrowPoints[5].x + Math.cos(a2)*s1.Radius*0.25);
+        var y3 = (t.arrowPoints[5].y + Math.sin(a2)*s1.Radius*0.25);
+        var x4 = (t.arrowPoints[5].x - Math.cos(a2)*s1.Radius*0.25);
+        var y4 = (t.arrowPoints[5].y - Math.sin(a2)*s1.Radius*0.25);
 
         t.arrowPoints[2] = {x:+x1.toFixed(2),y:+y1.toFixed(2)};
         t.arrowPoints[3] = {x:+x2.toFixed(2),y:+y2.toFixed(2)};
